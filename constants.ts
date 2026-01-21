@@ -1,0 +1,287 @@
+import { LenormandCard, LenormandHouse, Polarity, Timing, FundamentalModule, StudyBalloon } from './types';
+
+export const GEOMETRY_GUIDE = {
+  BRIDGE: { title: "Ponte Bridge", desc: "O dono da casa onde a carta caiu revela a causa raiz." },
+  MIRROR: { title: "Espelho 🪞", desc: "Dobre a mesa. Pontas opostas revelam o equilíbrio secreto." },
+  KNIGHT: { title: "Cavalo 🐎", desc: "2 casas + 1 (em L). Revela fofocas e o que está 'dobrando a esquina'." },
+  FRAME: { title: "Moldura 🖼️", desc: "Casas 1, 8, 25 e 32. O clima geral da vida." },
+  VEREDITO: { title: "Veredito Final ⚖️", desc: "Casas 33, 34, 35 e 36. O destino inevitável." },
+  DIAGONALS: { title: "Diagonais 🔺🔻", desc: "Influências ascendentes e descendentes que modulam a força da carta." }
+};
+
+export const LENORMAND_CARDS: LenormandCard[] = [
+  { id: 1, name: 'Cavaleiro', suit: '9 de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.FAST, timingScale: 'Dias', timingCategory: 'Acelera', keywords: ['Notícias', 'Visitas', 'Ação', 'Chegada.'], briefInterpretation: 'Movimento rápido e mensagens a caminho.', interpretationAtOrigin: 'Início imediato. Se eu caio aqui, as novidades chegam sem demora.', symbolicEnergy: 'Ar/Fogo', description: 'Emissário de novidades.' },
+  { id: 2, name: 'Trevo', suit: '6 de Ouros', polarity: Polarity.NEUTRAL, timingSpeed: Timing.FAST, timingScale: 'Dias', timingCategory: 'Acelera', keywords: ['Testes', 'Sorte Passageira', 'Obstáculos.'], briefInterpretation: 'Pequenos desafios que exigem jogo de cintura.', interpretationAtOrigin: 'Pequenos testes. Traz uma sorte momentânea ou um aviso de cautela leve.', symbolicEnergy: 'Terra', description: 'Sorte passageira.' },
+  { id: 3, name: 'Navio', suit: '10 de Espadas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: '1-3 Meses', timingCategory: 'Mantém', keywords: ['Viagens', 'Mudanças', 'Distância', 'Expansão.'], briefInterpretation: 'Processos de longo curso ou mudanças de horizonte.', interpretationAtOrigin: 'Expansão. Indica que o tema vem de longe ou requer deslocamento.', symbolicEnergy: 'Água', description: 'Jornadas longas.' },
+  { id: 4, name: 'Casa', suit: 'Rei de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.SLOW, timingScale: 'Anos', timingCategory: 'Retarda', keywords: ['Família', 'Estabilidade', 'Base', 'Intimidade.'], briefInterpretation: 'Assuntos sólidos, proteção e questões domésticas.', interpretationAtOrigin: 'Estabilidade duradoura. Se eu caio aqui, o tema está enraizado no lar.', symbolicEnergy: 'Terra', description: 'Porto seguro.' },
+  { id: 5, name: 'Árvore', suit: '7 de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.SLOW, timingScale: 'Anos', timingCategory: 'Retarda', keywords: ['Saúde', 'Vitalidade', 'Crescimento', 'Ancestrais.'], briefInterpretation: 'Evolução sólida e cuidado com o bem-estar físico.', interpretationAtOrigin: 'Crescimento orgânico. Vitalidade e enraizamento profundo do assunto.', symbolicEnergy: 'Terra', description: 'Conexão vital.' },
+  { id: 6, name: 'Nuvens', suit: 'Rei de Paus', polarity: Polarity.NEGATIVE, timingSpeed: Timing.SLOW, timingScale: 'Semanas', timingCategory: 'Bloqueia', keywords: ['Confusão', 'Dúvida', 'Incerteza', 'Instabilidade.'], briefInterpretation: 'Falta de clareza que exige paciência até a névoa passar.', interpretationAtOrigin: 'Confusão mental. Instabilidade temporária que impede a visão clara.', symbolicEnergy: 'Ar', description: 'Instabilidade passageira.' },
+  { id: 7, name: 'Cobra', suit: 'Dama de Paus', polarity: Polarity.NEGATIVE, timingSpeed: Timing.FAST, timingScale: 'Variável', timingCategory: 'Acelera', keywords: ['Traição', 'Malícia', 'Sinuosidade', 'Estratégia.'], briefInterpretation: 'Alerta para ataques súbitos ou caminhos tortuosos.', interpretationAtOrigin: 'Traições e desvios. Exige prudência e olhar atento aos arredores.', symbolicEnergy: 'Água', description: 'Sedução e astúcia.' },
+  { id: 8, name: 'Caixão', suit: '9 de Ouros', polarity: Polarity.NEGATIVE, timingSpeed: Timing.FAST, timingScale: 'Brusco', timingCategory: 'Acelera', keywords: ['Fim', 'Luto', 'Renascimento', 'Corte Total.'], briefInterpretation: 'Encerramento necessário de um ciclo para o novo surgir.', interpretationAtOrigin: 'Transformação profunda. O fim absoluto de uma situation para renovação.', symbolicEnergy: 'Terra', description: 'Transformação profunda.' },
+  { id: 9, name: 'Buquê', suit: 'Dama de Espadas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Estação', timingCategory: 'Mantém', keywords: ['Alegria', 'Presente', 'Reconhecimento', 'Cura.'], briefInterpretation: 'Momentos felizes, harmonia e conquistas sociais.', interpretationAtOrigin: 'Beleza e harmonia. Concede surpresas agradáveis e bem-estar.', symbolicEnergy: 'Ar', description: 'Reconhecimento.' },
+  { id: 10, name: 'Foice', suit: 'Valete de Ouros', polarity: Polarity.NEUTRAL, timingSpeed: Timing.FAST, timingScale: 'Imediato', timingCategory: 'Acelera', keywords: ['Corte', 'Decisão', 'Colheita', 'Ruptura.'], briefInterpretation: 'Fim abrupto ou o resultado direto do que foi plantado.', interpretationAtOrigin: 'Corte brusco. Se eu caio aqui, o tema será cortado ou exigirá ação imediata.', symbolicEnergy: 'Terra', description: 'Ruptura radical.' },
+  { id: 11, name: 'Chicote', suit: 'Valete de Paus', polarity: Polarity.NEGATIVE, timingSpeed: Timing.FAST, timingScale: 'Semanas', timingCategory: 'Acelera', keywords: ['Conflito', 'Estresse', 'Punição', 'Repetição.'], briefInterpretation: 'Discussões, tensões ou necessidade de limpeza profunda.', interpretationAtOrigin: 'Conflitos repetitivos. Gera estresse, discussões e desgaste físico.', symbolicEnergy: 'Fogo', description: 'Tensão contínua.' },
+  { id: 12, name: 'Pássaros', suit: '7 de Ouros', polarity: Polarity.NEUTRAL, timingSpeed: Timing.FAST, timingScale: 'Dias', timingCategory: 'Acelera', keywords: ['Diálogo', 'Agitação', 'Flertes', 'Duplicidade.'], briefInterpretation: 'Comunicação intensa, fofocas ou parcerias rápidas.', interpretationAtOrigin: 'Agitação social. Estímulo à fala, encontros e pequenas preocupações.', symbolicEnergy: 'Ar', description: 'Agitação mental.' },
+  { id: 13, name: 'Criança', suit: 'Valete de Paus', polarity: Polarity.POSITIVE, timingSpeed: Timing.FAST, timingScale: 'Início', timingCategory: 'Acelera', keywords: ['Novo', 'Pureza', 'Imaturidade', 'Filhos.'], briefInterpretation: 'Um recomeço espontâneo ou falta de experiência.', interpretationAtOrigin: 'Pureza e novos começos. Indica ingenuidade ou um projeto nascente.', symbolicEnergy: 'Água', description: 'Inocência original.' },
+  { id: 14, name: 'Raposa', suit: '9 de Paus', polarity: Polarity.NEGATIVE, timingSpeed: Timing.MODERATE, timingScale: 'Estratégia', timingCategory: 'Mantém', keywords: ['Armadilha', 'Falsidade', 'Astúcia', 'Cautela.'], briefInterpretation: 'Situação que exige análise fria e autopreservação.', interpretationAtOrigin: 'Armadilhas. Exige estratégia apurada para não ser enganado.', symbolicEnergy: 'Ar', description: 'Sobrevivência.' },
+  { id: 15, name: 'Urso', suit: '10 de Paus', polarity: Polarity.NEUTRAL, timingSpeed: Timing.SLOW, timingScale: 'Variável', timingCategory: 'Retarda', keywords: ['Poder', 'Proteção', 'Dominância', 'Ciúmes.'], briefInterpretation: 'Força imponente, autoridade ou proteção possessiva.', interpretationAtOrigin: 'Poder e domínio. Exerce uma proteção pesada ou controle sobre a situação.', symbolicEnergy: 'Terra', description: 'Instinto protetor.' },
+  { id: 16, name: 'Estrela', suit: '6 de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Noite', timingCategory: 'Mantém', keywords: ['Sorte', 'Esperança', 'Brilho', 'Orientação.'], briefInterpretation: 'Conexão com o destino e êxito nos planos.', interpretationAtOrigin: 'Brilho e sorte. Traz proteção espiritual e clareza para os objetivos.', symbolicEnergy: 'Ar', description: 'Proteção espiritual.' },
+  { id: 17, name: 'Cegonha', suit: 'Dama de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Ciclo', timingCategory: 'Mantém', keywords: ['Mudança', 'Novidade', 'Renovação', 'Viagem.'], briefInterpretation: 'Transformação positiva e novos ares chegando.', interpretationAtOrigin: 'Renovação. Promove mudanças de fase, novidades e fertilidade.', symbolicEnergy: 'Ar', description: 'Migração de ideias.' },
+  { id: 18, name: 'Cão', suit: '10 de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.SLOW, timingScale: 'Fiel', timingCategory: 'Retarda', keywords: ['Lealdade', 'Apoio', 'Confiança', 'Amizade.'], briefInterpretation: 'Alguien em quem se pode confiar ou suporte fiel.', interpretationAtOrigin: 'Lealdade garantida. Manutenção da confiança e apoio mútuo.', symbolicEnergy: 'Água', description: 'Fidelidade.' },
+  { id: 19, name: 'Torre', suit: '6 de Espadas', polarity: Polarity.NEUTRAL, timingSpeed: Timing.SLOW, timingScale: 'Tempo', timingCategory: 'Retarda', keywords: ['Isolamento', 'Burocracia', 'Justiça', 'Introspecção.'], briefInterpretation: 'Instituições, solidão necessária ou análise superior.', interpretationAtOrigin: 'Visão elevada. Se eu caio aqui, o tema pede recolhimento ou visão sistêmica.', symbolicEnergy: 'Ar', description: 'Instituição oficial.' },
+  { id: 20, name: 'Jardim', suit: '8 de Espadas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Eventos', timingCategory: 'Mantém', keywords: ['Social', 'Público', 'Coletividade', 'Encontros.'], briefInterpretation: 'A vida fora de casa e a imagem perante os outros.', interpretationAtOrigin: 'Exposição pública. Indica lazer, encontros e o que é visto por todos.', symbolicEnergy: 'Ar', description: 'Espaço público.' },
+  { id: 21, name: 'Montanha', suit: '8 de Paus', polarity: Polarity.NEGATIVE, timingSpeed: Timing.SLOW, timingScale: 'Atraso', timingCategory: 'Bloqueia', keywords: ['Bloqueio', 'Desafio', 'Inimigos', 'Frieza.'], briefInterpretation: 'Obstáculo rígido que exige perseverança e esforço.', interpretationAtOrigin: 'Desafios imponentes. Impõe bloqueios e dificuldades de progresso.', symbolicEnergy: 'Terra', description: 'Desafio geológico.' },
+  { id: 22, name: 'Caminho', suit: 'Dama de Ouros', polarity: Polarity.NEUTRAL, timingSpeed: Timing.FAST, timingScale: 'Escolha', timingCategory: 'Acelera', keywords: ['Decisão', 'Alternativa', 'Rumo', 'Dualidade.'], briefInterpretation: 'Momento de livre-arbítrio e escolha de direção.', interpretationAtOrigin: 'Encruzilhada. Oferece escolhas, bifurcações e múltiplas direções.', symbolicEnergy: 'Ar', description: 'Livre-arbítrio.' },
+  { id: 23, name: 'Ratos', suit: '7 de Paus', polarity: Polarity.NEGATIVE, timingSpeed: Timing.FAST, timingScale: 'Desgaste', timingCategory: 'Acelera', keywords: ['Perda', 'Roubo', 'Estresse', 'Corrosão.'], briefInterpretation: 'Situação que consome energia ou bens materiais.', interpretationAtOrigin: 'Dreno energético. Alerta para o que está sendo corroído silenciosamente.', symbolicEnergy: 'Terra', description: 'Dreno mental.' },
+  { id: 24, name: 'Coração', suit: 'Valete de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Sazonal', timingCategory: 'Mantém', keywords: ['Amor', 'Paixão', 'Emoção', 'Entrega.'], briefInterpretation: 'O centro dos sentimentos e desejos profundos.', interpretationAtOrigin: 'Emoção no centro. Coloca a entrega afetiva como prioridade.', symbolicEnergy: 'Água', description: 'Sede da alma.' },
+  { id: 25, name: 'Anel', suit: 'Ás de Paus', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Acordo', timingCategory: 'Mantém', keywords: ['Aliança', 'Casamento', 'Parceria', 'Ciclos.'], briefInterpretation: 'Compromissos firmados e uniões estáveis.', interpretationAtOrigin: 'Firma acordos. Sela uniões, contratos ou parcerias duradouras.', symbolicEnergy: 'Fogo', description: 'União e ciclo.' },
+  { id: 26, name: 'Livro', suit: '10 de Ouros', polarity: Polarity.NEUTRAL, timingSpeed: Timing.SLOW, timingScale: 'Estudo', timingCategory: 'Retarda', keywords: ['Segredo', 'Estudo', 'Oculto', 'Profissional.'], briefInterpretation: 'Conhecimento que ainda não foi revelado ou trabalho.', interpretationAtOrigin: 'Informação guardada. Mantagem segredos ou indica necessidade de estudos.', symbolicEnergy: 'Terra', description: 'Segredo guardado.' },
+  { id: 27, name: 'Carta', suit: '7 de Espadas', polarity: Polarity.NEUTRAL, timingSpeed: Timing.FAST, timingScale: 'Mensagem', timingCategory: 'Acelera', keywords: ['Aviso', 'Documento', 'Papel', 'Notícia.'], briefInterpretation: 'Comunicação formal, escrita ou direta.', interpretationAtOrigin: 'Notícias diretas. Traz avisos, documentos ou comunicações rápidas.', symbolicEnergy: 'Ar', description: 'Aviso imediato.' },
+  { id: 28, name: 'Homem', suit: 'Ás de Copas', polarity: Polarity.NEUTRAL, timingSpeed: Timing.UNCERTAIN, timingScale: 'N/A', timingCategory: 'N/A', keywords: ['Consulente ou Figura Masculina.'], briefInterpretation: 'Energia de ação, razão e presença masculina.', interpretationAtOrigin: 'O Consulente. Representa a influência da energia masculina na questão.', symbolicEnergy: 'Fogo', description: 'O Consulente.' },
+  { id: 29, name: 'Mulher', suit: 'Ás de Espadas', polarity: Polarity.NEUTRAL, timingSpeed: Timing.UNCERTAIN, timingScale: 'N/A', timingCategory: 'N/A', keywords: ['Consulente ou Figura Feminina.'], briefInterpretation: 'Energia de recepção, emoção e presença feminina.', interpretationAtOrigin: 'A Consulente. Representa a influência da energia feminina na questão.', symbolicEnergy: 'Água', description: 'A Consulente.' },
+  { id: 30, name: 'Lírios', suit: 'Rei de Espadas', polarity: Polarity.POSITIVE, timingSpeed: Timing.SLOW, timingScale: 'Inverno', timingCategory: 'Retarda', keywords: ['Paz', 'Maturidade', 'Virtude', 'Sabedoria.'], briefInterpretation: 'Equilíbrio, tranquilidade e longevidade.', interpretationAtOrigin: 'Harmonia ética. Traz paz, frieza ou maturidade à situação.', symbolicEnergy: 'Ar', description: 'Virtude.' },
+  { id: 31, name: 'Sol', suit: 'Ás de Ouros', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Dia', timingCategory: 'Mantém', keywords: ['Sucesso', 'Vitória', 'Clareza', 'Vitalidade.'], briefInterpretation: 'Brilho total, verdade revelada e energia vital.', interpretationAtOrigin: 'Sucesso absoluto. Revela a verdade e traz clareza total ao tema.', symbolicEnergy: 'Fogo', description: 'O Sucesso.' },
+  { id: 32, name: 'Lua', suit: '8 de Copas', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: '28 Dias', timingCategory: 'Mantém', keywords: ['Honra', 'Intuição', 'Mérito', 'Imaginação.'], briefInterpretation: 'Reconhecimento público ou flutuações emocionais.', interpretationAtOrigin: 'Psiquismo elevado. Confere reconhecimento, méritos e intuição.', symbolicEnergy: 'Água', description: 'Fama e mistério.' },
+  { id: 33, name: 'Chave', suit: '8 de Ouros', polarity: Polarity.POSITIVE, timingSpeed: Timing.FAST, timingScale: 'Ação', timingCategory: 'Acelera', keywords: ['Solução', 'Abertura', 'Resposta', 'Sucesso.'], briefInterpretation: 'A saída para o enigma ou a conquista do objetivo.', interpretationAtOrigin: 'Veredito. Abre caminhos e entrega a solução definitiva.', symbolicEnergy: 'Terra', description: 'A Resposta.' },
+  { id: 34, name: 'Peixes', suit: 'Rei de Ouros', polarity: Polarity.POSITIVE, timingSpeed: Timing.MODERATE, timingScale: 'Fluxo', timingCategory: 'Mantém', keywords: ['Dinheiro', 'Negócios', 'Bens', 'Fluidez.'], briefInterpretation: 'Abundância material e movimento financeiro.', interpretationAtOrigin: 'Movimentação de recursos. Garante falicidade material e lucro.', symbolicEnergy: 'Água', description: 'Fluxo.' },
+  { id: 35, name: 'Âncora', suit: '9 de Espadas', polarity: Polarity.POSITIVE, timingSpeed: Timing.SLOW, timingScale: 'Fixo', timingCategory: 'Retarda', keywords: ['Trabalho', 'Segurança', 'Estabilidade', 'Porto.'], briefInterpretation: 'Fixação de um resultado ou rotina segura.', interpretationAtOrigin: 'Estabilização. Fixa e traz segurança (ou estagnação) ao resultado.', symbolicEnergy: 'Terra', description: 'Porto seguro.' },
+  { id: 36, name: 'Cruz', suit: '6 de Paus', polarity: Polarity.NEUTRAL, timingSpeed: Timing.SLOW, timingScale: 'Cármico', timingCategory: 'Retarda', keywords: ['Destino', 'Prova', 'Fé', 'Finalização.'], briefInterpretation: 'Superação de uma carga para alcançar a vitória.', interpretationAtOrigin: 'Destino inevitável. Determina provações de fé e a vitória final.', symbolicEnergy: 'Terra', description: 'O Destino.' }
+];
+
+export const LENORMAND_HOUSES: LenormandHouse[] = [
+  { id: 1, name: "Cavaleiro", polarity: Polarity.POSITIVE, theme: "Notícias e Movimento", technicalDescription: "Traz movemento, chegada de novidades e agilidade para o tema.", pedagogicalRule: "Espelhamento: 08 e 25." },
+  { id: 2, name: "Trevos", polarity: Polarity.NEUTRAL, theme: "Obstáculos/Sorte", technicalDescription: "Impõe pequenos obstáculos passageiros ou confere sorte momentânea.", pedagogicalRule: "Espelhamento: 07 e 26." },
+  { id: 3, name: "Navio", polarity: Polarity.POSITIVE, theme: "Expansão/Viagem", technicalDescription: "Promove a expansão, viagens or indica que o tema vem de longe/demora.", pedagogicalRule: "Espelhamento: 06 e 27." },
+  { id: 4, name: "Casa", polarity: Polarity.POSITIVE, theme: "Lar/Estabilidade", technicalDescription: "Oferece base, segurança, proteção familiar e estabilidade ao tema.", pedagogicalRule: "Espelhamento: 05 e 28." },
+  { id: 5, name: "Árvore", polarity: Polarity.POSITIVE, theme: "Crescimento/Saúde", technicalDescription: "Consolida o crescimento orgânico, vitalidade e enraizamento do assunto.", pedagogicalRule: "Espelhamento: 04 e 29." },
+  { id: 6, name: "Nuvens", polarity: Polarity.NEGATIVE, theme: "Incerteza/Confusão", technicalDescription: "Gera incerteza, confusão mental e instabilidade temporária sobre o tema.", pedagogicalRule: "Espelhamento: 03 e 30." },
+  { id: 7, name: "Cobra", polarity: Polarity.NEGATIVE, theme: "Traição/Rivalidade", technicalDescription: "Alerta para traições, rivalidades, desvios ou perigos no caminho.", pedagogicalRule: "Espelhamento: 02 e 31." },
+  { id: 8, name: "Caixão", polarity: Polarity.NEGATIVE, theme: "Fim/Transformação", technicalDescription: "Determina o encerramento de um ciclo, perdas ou transformações profundas.", pedagogicalRule: "Espelhamento: 01 e 32." },
+  { id: 9, name: "Buquê", polarity: Polarity.POSITIVE, theme: "Harmonia/Beleza", technicalDescription: "Concede beleza, harmonia, surpresas agradáveis e reconhecimento.", pedagogicalRule: "Espelhamento: 16 e 17." },
+  { id: 10, name: "Foice", polarity: Polarity.NEGATIVE, theme: "Corte/Decisão", technicalDescription: "Provoca cortes bruscos, rompimentos ou o momento de colheita imediata.", pedagogicalRule: "Espelhamento: 15 e 18." },
+  { id: 11, name: "Chicote", polarity: Polarity.NEGATIVE, theme: "Tensões/Conflitos", technicalDescription: "Gera conflitos, discussões repetitivas, estresse ou desgaste físico.", pedagogicalRule: "Espelhamento: 14 e 19." },
+  { id: 12, name: "Pássaros", polarity: Polarity.NEUTRAL, theme: "Comunicação social", technicalDescription: "Estimula a comunicação, conversas, fofocas e agitação momentânea.", pedagogicalRule: "Espelhamento: 13 e 20." },
+  { id: 13, name: "Criança", polarity: Polarity.POSITIVE, theme: "Novo/Inocência", technicalDescription: "Indica um novo começo, pureza, ingenuidade ou imaturidade no assunto.", pedagogicalRule: "Espelhamento: 12 e 21." },
+  { id: 14, name: "Raposa", polarity: Polarity.NEGATIVE, theme: "Estratégia/Armadilha", technicalDescription: "Exige estratégia e cautela; indica armadilhas ou situações enganosas.", pedagogicalRule: "Espelhamento: 11 e 22." },
+  { id: 15, name: "Urso", polarity: Polarity.NEUTRAL, theme: "Poder/Ciúmes", technicalDescription: "Exerce poder, domínio, proteção pesada ou ciúmes sobre a situação.", pedagogicalRule: "Espelhamento: 10 e 23." },
+  { id: 16, name: "Estrela", polarity: Polarity.POSITIVE, theme: "Sorte/Êxito", technicalDescription: "Traz brilho, sorte, proteção espiritual e êxito nos objetivos.", pedagogicalRule: "Espelhamento: 09 e 24." },
+  { id: 17, name: "Cegonha", polarity: Polarity.POSITIVE, theme: "Mudança/Renovação", technicalDescription: "Promove novidades, mudanças de fase, renovação ou gravidez.", pedagogicalRule: "Espelhamento: 24 e 09." },
+  { id: 18, name: "Cão", polarity: Polarity.POSITIVE, theme: "Fidelidade/Confiança", technicalDescription: "Garante lealdade, apoio fiel e manutenção da confiança no tema.", pedagogicalRule: "Espelhamento: 23 e 10." },
+  { id: 19, name: "Torre", polarity: Polarity.NEUTRAL, theme: "Isolamento/Justiça", technicalDescription: "Promove o isolamento, a reflexão solitária ou questões institucionais.", pedagogicalRule: "Espelhamento: 22 e 11." },
+  { id: 20, name: "Jardim", polarity: Polarity.POSITIVE, theme: "Social/Público", technicalDescription: "Expõe o assunto ao público, à vida social e à coletividade.", pedagogicalRule: "Espelhamento: 21 e 12." },
+  { id: 21, name: "Montanha", polarity: Polarity.NEGATIVE, theme: "Bloqueio/Dificuldade", technicalDescription: "Impõe bloqueios, grandes desafios, atrasos e dificuldades de progresso.", pedagogicalRule: "Espelhamento: 20 e 13." },
+  { id: 22, name: "Caminho", polarity: Polarity.NEUTRAL, theme: "Escolhas/Dualidade", technicalDescription: "Oferece escolhas, bifurcações e múltiplas direções a seguir.", pedagogicalRule: "Espelhamento: 19 e 14." },
+  { id: 23, name: "Ratos", polarity: Polarity.NEGATIVE, theme: "Desgaste/Perda", technicalDescription: "Causa desgaste, estresse, perdas, roubos ou diminução de energia.", pedagogicalRule: "Espelhamento: 18 e 15." },
+  { id: 24, name: "Coração", polarity: Polarity.POSITIVE, theme: "Amor/Entrega", technicalDescription: "Coloca a emoção, a paixão e a entrega afetiva no centro da questão.", pedagogicalRule: "Espelhamento: 17 e 16." },
+  { id: 25, name: "Anel", polarity: Polarity.POSITIVE, theme: "Compromisso/União", technicalDescription: "Firma compromissos, sela acordos, uniões ou parcerias duradouras.", pedagogicalRule: "Espelhamento: 32 e 01." },
+  { id: 26, name: "Livro", polarity: Polarity.NEUTRAL, theme: "Segredo/Estudo", technicalDescription: "Mantagem segredos, revela o oculto ou indica necessidade de estudos.", pedagogicalRule: "Espelhamento: 31 e 02." },
+  { id: 27, name: "Carta", polarity: Polarity.NEUTRAL, theme: "Avisos/Documentos", technicalDescription: "Traz avisos, documentos, mensagens ou notícias diretas.", pedagogicalRule: "Espelhamento: 30 e 03." },
+  { id: 28, name: "Homem", polarity: Polarity.NEUTRAL, theme: "Consulente Masculino", technicalDescription: "Representa a influência da energia masculina ou racional na questão.", pedagogicalRule: "Espelhamento: 29 e 04." },
+  { id: 29, name: "Mulher", polarity: Polarity.NEUTRAL, theme: "Consulente Feminina", technicalDescription: "Representa a influência da energia feminina ou receptiva na questão.", pedagogicalRule: "Espelhamento: 28 e 05." },
+  { id: 30, name: "Lírios", polarity: Polarity.POSITIVE, theme: "Paz/Maturidade", technicalDescription: "Traz paz, frieza, maturidade, sabedoria ou virtude à situação.", pedagogicalRule: "Espelhamento: 27 e 06." },
+  { id: 31, name: "Sol", polarity: Polarity.POSITIVE, theme: "Sucesso/Vitalidade", technicalDescription: "Revela a verdade, traz sucesso, clareza total e vitalidade.", pedagogicalRule: "Espelhamento: 26 e 07." },
+  { id: 32, name: "Lua", polarity: Polarity.POSITIVE, theme: "Intuição/Mérito", technicalDescription: "Confere reconhecimento, méritos, intuição ou flutuação emocional.", pedagogicalRule: "Espelhamento: 25 e 08." },
+  { id: 33, name: "Chave", polarity: Polarity.POSITIVE, theme: "Veredito/Solução", technicalDescription: "Abre caminhos e entrega a solução para o problema.", pedagogicalRule: "Espelha c/ 36." },
+  { id: 34, name: "Peixes", polarity: Polarity.POSITIVE, theme: "Veredito/Recursos", technicalDescription: "Movimenta recursos financeiros e garante falicidade material.", pedagogicalRule: "Espelha c/ 35." },
+  { id: 35, name: "Âncora", polarity: Polarity.POSITIVE, theme: "Veredito/Segurança", technicalDescription: "Estabiliza, fixa e traz segurança (ou estagnação) ao resultado.", pedagogicalRule: "Espelha c/ 34." },
+  { id: 36, name: "Cruz", polarity: Polarity.NEUTRAL, theme: "Veredito/Destino", technicalDescription: "Determina o destino, provações de fé e a vitória final.", pedagogicalRule: "Espelha c/ 33." },
+
+  // Casas do Relógio
+  { id: 101, name: "Casa 1 (Áries)", polarity: Polarity.POSITIVE, theme: "O Eu / Identidade", technicalDescription: "Representa o 'Eu', iniciativa pessoal e começos.", pedagogicalRule: "O início da jornada no ano.", isClockHouse: true, month: "Janeiro", zodiac: "Áries" },
+  { id: 102, name: "Casa 2 (Touro)", polarity: Polarity.NEUTRAL, theme: "Valores e Finanças", technicalDescription: "Bens materiais, segurança financeira e valores pessoais.", pedagogicalRule: "Recursos para o ano.", isClockHouse: true, month: "Fevereiro", zodiac: "Touro" },
+  { id: 103, name: "Casa 3 (Gêmeos)", polarity: Polarity.NEUTRAL, theme: "Comunicação e Ideias", technicalDescription: "Circulação de informações, aprendizado e ambiente imediato.", pedagogicalRule: "O fluxo mental e contatos.", isClockHouse: true, month: "Março", zodiac: "Gêmeos" },
+  { id: 104, name: "Casa 4 (Câncer)", polarity: Polarity.POSITIVE, theme: "Família e Lar", technicalDescription: "Foca em família, lar, passado e segurança emocional.", pedagogicalRule: "As bases emocionais do ciclo.", isClockHouse: true, month: "Abril", zodiac: "Câncer" },
+  { id: 105, name: "Casa 5 (Leão)", polarity: Polarity.POSITIVE, theme: "Criatividade e Lazer", technicalDescription: "Assuntos de prazer, lazer, filhos, romance e autoexpressão.", pedagogicalRule: "A alegria e a criação.", isClockHouse: true, month: "Maio", zodiac: "Leão" },
+  { id: 106, name: "Casa 6 (Virgem)", polarity: Polarity.NEUTRAL, theme: "Saúde e Trabalho", technicalDescription: "Trabalho cotidiano, deveres, saúde física e rotina.", pedagogicalRule: "O esforço diário e cuidado.", isClockHouse: true, month: "Junho", zodiac: "Virgem" },
+  { id: 107, name: "Casa 7 (Libra)", polarity: Polarity.POSITIVE, theme: "Relações e Parcerias", technicalDescription: "Relacionamentos sérios, parcerias, harmonia e acordos sociais.", pedagogicalRule: "O outro no seu caminho.", isClockHouse: true, month: "Julho", zodiac: "Libra" },
+  { id: 108, name: "Casa 8 (Escorpião)", polarity: Polarity.NEGATIVE, theme: "Transformação", technicalDescription: "Transformações profundas, recursos compartilhados, sexualidade.", pedagogicalRule: "Onde o desapego é necessário.", isClockHouse: true, month: "Agosto", zodiac: "Escorpião" },
+  { id: 109, name: "Casa 9 (Sagitário)", polarity: Polarity.POSITIVE, theme: "Expansão e Visões", technicalDescription: "Viagens, ensino superior, filosofia e visões de futuro.", pedagogicalRule: "O crescimento espiritual.", isClockHouse: true, month: "Setembro", zodiac: "Sagitário" },
+  { id: 110, name: "Casa 10 (Capricórnio)", polarity: Polarity.NEUTRAL, theme: "Carreira e Reputação", technicalDescription: "Objetivos de longo prazo, autoridade e sucesso profissional.", pedagogicalRule: "A realização no mundo.", isClockHouse: true, month: "Outubro", zodiac: "Capricórnio" },
+  { id: 111, name: "Casa 11 (Aquário)", polarity: Polarity.POSITIVE, theme: "Amigos e Futuro", technicalDescription: "Amigos, inovação, projetos sociais e ideias futuristas.", pedagogicalRule: "A rede de apoio e planos.", isClockHouse: true, month: "Novembro", zodiac: "Aquário" },
+  { id: 112, name: "Casa 12 (Peixes)", polarity: Polarity.NEUTRAL, theme: "Espiritualidade", technicalDescription: "Sonhos, sacrifícios finais, isolamento e espiritualidade.", pedagogicalRule: "O encerramento e a transcendência.", isClockHouse: true, month: "Dezembro", zodiac: "Peixes" }
+];
+
+export const FUNDAMENTALS_DATA: FundamentalModule[] = [
+  {
+    id: 'f_mesa_real',
+    title: 'Fundamentos da Mesa Real',
+    description: 'A Mesa Real é uma disposição ampla e sistêmica das cartas do Baralho Cigano, utilizada para leituras profundas, evolutivas e de longo alcance.',
+    content: 'Diferente de tiragens simples, ela trabalha com múltiplas camadas de interpretação simultâneas.',
+    concepts: [
+      {
+        id: 'gt-principles',
+        title: 'Princípios Fundamentais',
+        text: 'A leitura não é linear, mas relacional. As cartas dialogam por proximidade, distância e geometria.',
+        details: 'O sentido real emerge do conjunto, não de cartas isoladas.',
+        practiceTarget: 'mesa-real'
+      },
+      { 
+        id: 'gt-frame',
+        title: 'A Moldura', 
+        text: 'As quatro cartas dos cantos extremos da mesa formam o cenário geral da vida do consulente no momento.',
+        details: 'Elas emolduram toda a experiência apresentada na leitura.',
+        practiceTarget: 'mesa-real'
+      },
+      { 
+        id: 'gt-diagonals',
+        title: 'Diagonais', 
+        text: 'As diagonais que partem do significador revelam o fluxo de pensamento, ação, destino e bases inconscientes.',
+        details: 'Dividem a experiência em quatro quadrantes simbólicos.',
+        practiceTarget: 'mesa-real'
+      },
+      { 
+        id: 'gt-mirror',
+        title: 'Espelhamento', 
+        text: 'Leitura de cartas posicionadas de forma simétrica na mesa.',
+        details: 'Revela o que é mostrado versus o que é ocultado, trazendo reflexos internos e externos.',
+        practiceTarget: 'mesa-real'
+      },
+      { 
+        id: 'gt-knight',
+        title: 'Cavalaria', 
+        text: 'Técnica baseada no movimento do cavalo no xadrez, utilizada para investigar intenções ocultas, segredos e influências indiretas sobre uma carta ou casa.',
+        practiceTarget: 'mesa-real'
+      },
+      { 
+        id: 'gt-time',
+        title: 'Dinâmica do Tempo',
+        text: 'A contagem de tempo é determinada pela distância entre o significador e a carta tema, bem como pela velocidade simbólica das cartas.',
+        details: 'Critérios:\n• Cartas próximas indicam eventos iminentes.\n• Cartas distantes indicam eventos de médio ou longo prazo.\n• Cartas rápidas aceleram o tempo.\n• Cartas lentas indicam demora ou processos prolongados.',
+        practiceTarget: 'mesa-real'
+      },
+      { 
+        id: 'gt-veredict',
+        title: 'Veredito Final', 
+        text: 'As casas 33 a 36 mostram o destino inevitável e o conselho final da leitura.',
+        details: 'As quatro últimas casas fornecem a síntese final da leitura, destino inevitável e o conselho maior.',
+        practiceTarget: 'mesa-real'
+      }
+    ]
+  },
+  {
+    id: 'f_mesa_9',
+    title: 'Fundamentos da Tiragem de 9 Cartas',
+    description: 'A Tiragem de 9 Cartas, também chamada de Quadrado de 9 ou Mini-Tableau, é uma leitura intermediária que une profundidade simbólica e clareza estratégica.',
+    content: 'Esta tiragem funciona como ponte entre leituras simples e a complexidade da Mesa Real.',
+    concepts: [
+      {
+        id: 'm9-center',
+        title: 'Formato e Foco',
+        text: 'Matriz 3x3. A carta central representa o foco principal da questão e organiza toda a interpretação.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-columns',
+        title: 'Colunas de Tempo',
+        text: 'Leitura vertical das colunas indicando a linha do tempo.',
+        details: '• Esquerda: Passado – causas e origens da situação.\n• Centro: Presente – estado atual e desenvolvimento.\n• Direita: Futuro – tendência e desfecho.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-rows',
+        title: 'Leitura das Linhas (Planos)',
+        text: 'Leitura horizontal das linhas indicando níveis de consciência.',
+        details: '• Superior: Plano mental e consciente.\n• Central: Plano emocional e ações.\n• Inferior: Plano físico, base e resultados.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-cross',
+        title: 'A Cruz',
+        text: 'Eixo vertical e horizontal que revela a estrutura central do problema.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-diagonals',
+        title: 'Diagonais',
+        text: 'Caminhos do destino e lições kármicas.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-frame',
+        title: 'Moldura',
+        text: 'As quatro cartas dos cantos indicam o clima geral da situação.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-time',
+        title: 'Dinâmica do Tempo',
+        text: 'A carta 9 indica o ritmo do desfecho, influenciada pela natureza da carta central.',
+        details: '• Cartas rápidas indicam resolução em dias ou semanas.\n• Cartas lentas indicam processos longos ou demorados.',
+        practiceTarget: 'mesa-9'
+      },
+      {
+        id: 'm9-function',
+        title: 'Função da Tiragem',
+        text: 'Esta tiragem funciona como ponte entre leituras simples e a complexidade da Mesa Real.',
+        practiceTarget: 'mesa-9'
+      }
+    ]
+  },
+  {
+    id: 'f_relogio',
+    title: 'Fundamentos da Tiragem do Relógio',
+    description: 'A Tiragem do Relógio, também conhecida como Mandala Astrológica, utiliza o arquétipo das 12 casas para mapear ciclos, áreas da vida e o fluxo do tempo.',
+    content: 'A Tiragem em Relógio organiza 12 cartas em formato circular, representando um ciclo de 12 meses.',
+    concepts: [
+      { 
+        id: 'clock-structure',
+        title: 'Estrutura e Carta Central', 
+        text: '12 cartas dispostas em círculo e 1 carta central.',
+        details: 'A carta central atua como tema, síntese ou energia regente do período analisado.',
+        practiceTarget: 'relogio'
+      },
+      {
+        id: 'clock-houses',
+        title: 'As 12 Casas',
+        text: 'Cada casa representa uma área da vida.',
+        details: '• Casa 1: O Eu, estado mental e vitalidade\n• Casa 2: Valores, finanças e recursos\n• Casa 3: Comunicação e cotidiano\n• Casa 4: Lar, família e base emocional\n• Casa 5: Prazer, romances e criatividade\n• Casa 6: Rotina, trabalho e saúde física\n• Casa 7: Parcerias e relacionamentos\n• Casa 8: Transformações e crises\n• Casa 9: Expansão, espiritualidade e estudos\n• Casa 10: Carreira e realização social\n• Casa 11: Amigos e projetos futuros\n• Casa 12: Karma, inconsciente e provações',
+        practiceTarget: 'relogio'
+      },
+      {
+        id: 'clock-axes',
+        title: 'Eixos de Oposição',
+        text: 'Tensões e equilíbrios entre casas opostas.',
+        details: '• 1 x 7: Identidade versus o Outro\n• 2 x 8: Posse versus compartilhamento\n• 3 x 9: Conhecimento prático versus espiritual\n• 4 x 10: Vida privada versus vida pública\n• 5 x 11: Prazer pessoal versus coletivo\n• 6 x 12: Corpo físico versus espírito',
+        practiceTarget: 'relogio'
+      },
+      { 
+        id: 'clock-temporality',
+        title: 'Dinâmica do Tempo', 
+        text: 'Cartas rápidas antecipam eventos; cartas lentas indicam atrasos.',
+        details: 'Métodos:\n• Método Mensal: cada casa representa um mês a partir da consulta.\n• Método Estacional: casas angulares marcam mudanças de estação.',
+        practiceTarget: 'relogio'
+      },
+      { 
+        id: 'clock-absence',
+        title: 'Carta Esperada Ausente', 
+        text: 'Indica que a concretização completa ultrapassa o ciclo anual de 12 meses.',
+        details: 'Quando a carta foco não aparece nas 12 casas principais, indica que a concretização completa ultrapassa o ciclo anual. A aparição em tiragens secundárias mostra preparação.',
+        practiceTarget: 'relogio'
+      },
+      { 
+        id: 'clock-second-draw',
+        title: 'Segunda Tiragem', 
+        text: 'Utiliza as cartas restantes para aprofundar desdobramentos e obstáculos ocultos.',
+        details: 'A segunda tiragem utiliza as cartas restantes para aprofundar desdobramentos, obstáculos ocultos e fases intermediárias do processo.',
+        practiceTarget: 'relogio'
+      }
+    ]
+  }
+];
+
+export const STUDY_BALLOONS: Record<string, StudyBalloon[]> = {
+  "mesa-real": [
+    { target: "frame", title: "Moldura", text: "Clima geral da vida do consulente. Casas 1, 8, 25 e 32." },
+    { target: "diagonal", title: "Diagonal", text: "Mostra crescimento ou sustentação da situação através das influências ascendentes e descendentes." },
+    { target: "veredict", title: "Veredito Final", text: "Destino inevitável e conselho. Casas 33 a 36 fornecem a síntese final." }
+  ],
+  "mesa-9": [
+    { target: "center", title: "Foco Central", text: "A carta 5 é o coração da leitura. Tudo deve ser lido em relação a ela." },
+    { target: "diagonals", title: "Diagonais (X)", text: "Cruzamento de influências passadas e futuras que definem o destino." },
+    { target: "cross", title: "Cruz Central", text: "O momento imediato: o que está na mente (horizontal) e no concreto (vertical)." }
+  ],
+  "relogio": [
+    { target: "center", title: "Centro do Relógio", text: "Origem do ciclo anual e energia base da leitura que regula todo o período." },
+    { target: "house", title: "Casa do Mês", text: "Cada posição representa um mês e um tema específico da jornada cíclica." }
+  ]
+};
