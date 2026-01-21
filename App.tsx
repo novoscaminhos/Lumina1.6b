@@ -10,7 +10,7 @@ import {
   Book, GitMerge, RefreshCw, Scale, ZapOff, Trash2, Calendar, HardDrive, Smartphone, Globe, Share2,
   GraduationCap, PenTool, ClipboardList, BarChart3, Binary, MousePointer2, Plus, Monitor,
   Crosshair, Frame, CornerDownRight, CheckCircle2, Lightbulb, ZoomIn, ZoomOut,
-  Grid3x3, Home, Camera
+  Grid3x3, Home, Camera, Timer, Lock
 } from 'lucide-react';
 import html2canvas from 'https://esm.sh/html2canvas@1.4.1';
 import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
@@ -22,10 +22,22 @@ import * as Geometry from './geometryService';
 import { CARD_IMAGES, FALLBACK_IMAGE, BASE64_FALLBACK } from './cardImages';
 
 // ===============================
+// Constantes do Modo Degustação
+// ===============================
+const TRIAL_DURATION_MS = 30 * 60 * 1000; // 30 minutos
+
+type AccessType = 'full' | 'trial' | 'none';
+
+// ===============================
 // Componentes de Interface
 // ===============================
-const NavItem: React.FC<{ icon: React.ReactNode; label: string; active: boolean; collapsed: boolean; onClick: () => void }> = ({ icon, label, active, collapsed, onClick }) => (
-  <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]' : 'text-slate-900 hover:bg-slate-200 hover:text-indigo-950 font-bold'} ${collapsed ? 'justify-center px-0' : ''}`} title={collapsed ? label : ""}>
+const NavItem: React.FC<{ icon: React.ReactNode; label: string; active: boolean; collapsed: boolean; onClick: () => void; disabled?: boolean }> = ({ icon, label, active, collapsed, onClick, disabled }) => (
+  <button 
+    onClick={disabled ? undefined : onClick} 
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? 'bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]' : disabled ? 'text-slate-300 cursor-not-allowed' : 'text-slate-900 hover:bg-slate-200 hover:text-indigo-950 font-bold'} ${collapsed ? 'justify-center px-0' : ''}`} 
+    title={collapsed ? label : ""}
+    disabled={disabled}
+  >
     <div className={`flex items-center justify-center shrink-0 w-6 h-6 ${collapsed ? 'scale-110' : ''}`}>
       {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { strokeWidth: 2.5, className: 'w-full h-full' }) : icon}
     </div>
@@ -236,6 +248,128 @@ const App: React.FC = () => {
   const [zoomMenuOpen, setZoomMenuOpen] = useState(false);
   const [unscaledHeight, setUnscaledHeight] = useState(800); 
 
+  // --- ACCESS CONTROL & TRIAL MODE STATE ---
+  const [accessType, setAccessType] = useState<AccessType>('none');
+  const [trialExpired, setTrialExpired] = useState(false);
+  // Inicialização Lazy do trialConsumed para garantir que leia do LocalStorage na montagem
+  const [trialConsumed, setTrialConsumed] = useState(() => localStorage.getItem('lumina_trial_consumed') === 'true');
+  const [trialTimeLeft, setTrialTimeLeft] = useState<string>("");
+
+  // Derived state to replace previous boolean
+  const isTrialMode = accessType === 'trial';
+
+  // --- ACCESS CONTROL INITIALIZATION ---
+  useEffect(() => {
+    const storedAccess = localStorage.getItem('lumina_access_type') as AccessType | null;
+    const consumed = localStorage.getItem('lumina_trial_consumed') === 'true';
+    const token = localStorage.getItem('lumina_trial_token');
+
+    // 1. PRECEDÊNCIA: Full Access
+    if (storedAccess === 'full') {
+      setAccessType('full');
+      setTrialExpired(false);
+      return;
+    }
+
+    // 2. TRIAL MODE Check
+    if (storedAccess === 'trial') {
+      // Se já consumido, estado inválido (não deveria ser 'trial'). Força 'none' e garante flag.
+      if (consumed) {
+         setTrialConsumed(true);
+         setAccessType('none'); 
+         localStorage.removeItem('lumina_access_type'); // Limpa estado inconsistente
+         return;
+      }
+
+      // Se tem token, verifica tempo
+      if (token) {
+        const startTime = parseInt(token, 10);
+        const now = Date.now();
+        const elapsed = now - startTime;
+
+        if (elapsed >= TRIAL_DURATION_MS) {
+          // Expirou
+          setAccessType('trial'); // Define como trial para mostrar o overlay de expirado
+          setTrialExpired(true);
+          setTrialConsumed(true);
+          localStorage.setItem('lumina_trial_consumed', 'true');
+        } else {
+          // Trial Válido
+          setAccessType('trial');
+          setTrialExpired(false);
+        }
+      } else {
+        // Estado inconsistente (tem 'trial' no access type mas sem token). Reset para none.
+        setAccessType('none');
+        localStorage.removeItem('lumina_access_type');
+      }
+    } else {
+      // Default: None
+      setAccessType('none');
+    }
+  }, []);
+
+  // --- TIMER LOGIC (Only runs if Trial Active & Not Expired) ---
+  useEffect(() => {
+    if (accessType !== 'trial' || trialExpired) return;
+
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('lumina_trial_token');
+      if (!token) return;
+
+      const startTime = parseInt(token, 10);
+      const now = Date.now();
+      const remaining = TRIAL_DURATION_MS - (now - startTime);
+
+      if (remaining <= 0) {
+        // EXPIRED!
+        setTrialExpired(true);
+        setTrialConsumed(true);
+        localStorage.setItem('lumina_trial_consumed', 'true');
+        clearInterval(interval);
+      } else {
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        setTrialTimeLeft(`${m}:${s.toString().padStart(2, '0')}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [accessType, trialExpired]);
+
+
+  const handleStartTrial = () => {
+    // Verifica se já consumiu
+    const isConsumed = localStorage.getItem('lumina_trial_consumed') === 'true';
+    if (isConsumed) {
+      alert("O período de degustação já foi utilizado neste dispositivo.");
+      setTrialConsumed(true);
+      return;
+    }
+
+    const now = Date.now();
+    // DEFINE CHAVES
+    localStorage.setItem('lumina_access_type', 'trial');
+    localStorage.setItem('lumina_trial_token', now.toString());
+    
+    // ATUALIZA ESTADO
+    setAccessType('trial');
+    setTrialExpired(false);
+    // Permanece na home, mas desbloqueia a interface
+  };
+
+  const handleExitTrial = () => {
+    // Ação do botão "Voltar ao Início" no overlay de expiração
+    // Reseta visualmente para o Portal (None)
+    localStorage.removeItem('lumina_access_type'); // Remove o acesso 'trial' ativo
+    // NOTA: 'lumina_trial_token' e 'lumina_trial_consumed' permanecem gravados!
+    
+    setAccessType('none'); 
+    setTrialExpired(false);
+    setView('home');
+    window.location.reload(); // Reload para garantir limpeza total de memória
+  };
+
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 2.5));
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.4));
   
@@ -354,6 +488,12 @@ const App: React.FC = () => {
 
   // NEW: Save Reading
   const handleSaveReading = () => {
+    // RESTRICTION: Only 'full' can save
+    if (accessType !== 'full') {
+      alert("Recurso indisponível no Modo Degustação.\n\nO salvamento de tiragens é exclusivo da versão completa.");
+      return;
+    }
+
     if (board.every(id => id === null)) {
       alert("O tabuleiro está vazio. Realize uma tiragem antes de salvar.");
       return;
@@ -381,6 +521,12 @@ const App: React.FC = () => {
 
   // NEW: Load Reading
   const handleLoadReading = (reading: any) => {
+    // RESTRICTION: Only 'full' can load history
+    if (accessType !== 'full') {
+      alert("Recurso indisponível no Modo Degustação.\n\nO histórico de leituras é exclusivo da versão completa.");
+      return;
+    }
+    
     setSpreadType(reading.type);
     setBoard(reading.board);
     setFirstDrawBoard(reading.firstDrawBoard || null);
@@ -560,8 +706,10 @@ const App: React.FC = () => {
       const dateStr = new Date().toLocaleDateString('pt-BR');
       const timeStr = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
       
-      // Subtítulo com dados da tiragem (Nome persiste aqui, foto não)
-      doc.text(`Consulente: ${userName} | Data: ${dateStr} às ${timeStr}`, pageWidth / 2, 22, { align: 'center' });
+      // Subtítulo com dados da tiragem
+      // WATERMARK logic: Only show watermark if TRIAL
+      const trialWatermark = accessType === 'trial' ? " [MODO DEGUSTAÇÃO]" : "";
+      doc.text(`Consulente: ${userName}${trialWatermark} | Data: ${dateStr} às ${timeStr}`, pageWidth / 2, 22, { align: 'center' });
 
       // Linha separadora
       doc.setDrawColor(200);
@@ -621,7 +769,7 @@ const App: React.FC = () => {
     } catch (err) { 
       console.error("Erro ao exportar PDF:", err); 
     }
-  }, [spreadType, userName]);
+  }, [spreadType, userName, accessType]);
 
   const getGeometryHighlight = (idx: number) => {
     if (!geometryFilters.has('nenhuma')) {
@@ -754,6 +902,29 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex flex-col md:flex-row bg-slate-50 text-slate-900 transition-colors overflow-hidden font-inter`}>
+      
+      {/* TRIAL EXPIRED OVERLAY */}
+      {trialExpired && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500">
+          <div className="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl space-y-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-500"></div>
+            <div className="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto text-rose-600 animate-pulse">
+              <Lock size={40} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-cinzel font-black text-slate-900 mb-2">Degustação Encerrada</h2>
+              <p className="text-slate-500 text-sm leading-relaxed">O período de 30 minutos de experimentação gratuita foi concluído. Esperamos que tenha aproveitado a jornada Lumina.</p>
+            </div>
+            <button 
+              onClick={handleExitTrial}
+              className="w-full py-4 rounded-xl bg-slate-900 text-white font-black uppercase tracking-widest text-xs hover:bg-slate-800 transition-all shadow-xl"
+            >
+              Voltar ao Início
+            </button>
+          </div>
+        </div>
+      )}
+
       <aside className={`fixed md:sticky top-0 inset-y-0 left-0 flex flex-col border-r border-slate-200 bg-white shadow-xl transition-all duration-300 z-[60] h-screen ${sidebarCollapsed ? 'w-16' : 'w-64'}`}>
         <div className="p-4 flex items-center justify-between">
            <div className="flex items-center gap-2">
@@ -771,13 +942,14 @@ const App: React.FC = () => {
         
         <nav className="px-2 space-y-2 overflow-y-auto custom-scrollbar shrink-0">
           <NavItem icon={<Home size={18}/>} label="Início" active={view === 'home'} collapsed={sidebarCollapsed} onClick={() => {setView('home'); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<LayoutGrid size={18}/>} label="Mesa Real" active={view === 'board' && spreadType === 'mesa-real' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('mesa-real'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<Grid3x3 size={18}/>} label="Mesa de 9" active={view === 'board' && spreadType === 'mesa-9' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('mesa-9'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<Clock size={18}/>} label="Relógio" active={view === 'board' && spreadType === 'relogio' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('relogio'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<Book size={18}/>} label="Glossário" active={view === 'glossary'} collapsed={sidebarCollapsed} onClick={() => {setView('glossary'); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<BookOpen size={18}/>} label="Fundamentos" active={view === 'fundamentals'} collapsed={sidebarCollapsed} onClick={() => {setView('fundamentals'); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<Edit3 size={18}/>} label="Personalizada" active={view === 'board' && isManualMode} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setIsManualMode(true); setStudyMode(prev => ({ ...prev, active: false }));}} />
-          <NavItem icon={<GraduationCap size={18}/>} label="📘 Modo Estudo" active={view === 'study' || (view === 'board' && studyMode.active)} collapsed={sidebarCollapsed} onClick={() => {setView('study'); setStudyMode(prev => ({ ...prev, active: true }));}} />
+          {/* Menu items only enabled if NOT 'none' */}
+          <NavItem icon={<LayoutGrid size={18}/>} label="Mesa Real" active={view === 'board' && spreadType === 'mesa-real' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('mesa-real'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<Grid3x3 size={18}/>} label="Mesa de 9" active={view === 'board' && spreadType === 'mesa-9' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('mesa-9'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<Clock size={18}/>} label="Relógio" active={view === 'board' && spreadType === 'relogio' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('relogio'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<Book size={18}/>} label="Glossário" active={view === 'glossary'} collapsed={sidebarCollapsed} onClick={() => {setView('glossary'); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<BookOpen size={18}/>} label="Fundamentos" active={view === 'fundamentals'} collapsed={sidebarCollapsed} onClick={() => {setView('fundamentals'); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<Edit3 size={18}/>} label="Personalizada" active={view === 'board' && isManualMode} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setIsManualMode(true); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<GraduationCap size={18}/>} label="📘 Modo Estudo" active={view === 'study' || (view === 'board' && studyMode.active)} collapsed={sidebarCollapsed} onClick={() => {setView('study'); setStudyMode(prev => ({ ...prev, active: true }));}} disabled={accessType === 'none'} />
         </nav>
         
         {!sidebarCollapsed && (
@@ -810,8 +982,16 @@ const App: React.FC = () => {
           <h2 className={`font-cinzel text-sm font-black tracking-widest uppercase text-slate-900`}>
             {view === 'home' ? 'Bem-vindo ao Lumina' : view === 'board' ? (studyMode.active ? 'Estudo Prático' : isHistoryView ? 'Visualizando Histórico' : isManualMode ? 'Mesa Personalizada' : spreadType === 'mesa-real' ? 'Mesa Real' : spreadType === 'mesa-9' ? 'Quadrado de 9' : 'Relógio') : view === 'glossary' ? 'Glossário' : view === 'fundamentals' ? 'Fundamentos' : view === 'profile' ? 'Perfil do Usuário' : view === 'study' ? 'Modo Estudo' : 'Estudo'}
           </h2>
+          {/* Trial Timer Display - ONLY if in Trial and not expired */}
+          {accessType === 'trial' && !trialExpired && (
+             <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-full animate-pulse ml-4">
+                <Timer size={14} />
+                <span className="text-[10px] font-black uppercase tracking-widest font-mono">{trialTimeLeft}</span>
+             </div>
+          )}
+
           {view === 'board' && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto">
                {studyMode.active && (
                  <div className={`mr-4 px-4 py-1.5 rounded-full border flex items-center gap-3 bg-indigo-50 border-indigo-200 text-indigo-700`}>
                    <Brain size={16} />
@@ -914,9 +1094,26 @@ const App: React.FC = () => {
                  />
                  <h1 className="text-4xl md:text-5xl font-cinzel font-black text-slate-900">LUMINA</h1>
                  <p className="text-slate-500 max-w-lg mx-auto text-sm leading-relaxed">Selecione uma modalidade de tiragem abaixo para iniciar sua jornada de autoconhecimento através das cartas.</p>
+                 
+                 {/* TRIAL START BUTTON: Visible only if Access is NONE and NOT CONSUMED */}
+                 {accessType === 'none' && !trialConsumed && (
+                    <button 
+                      onClick={handleStartTrial}
+                      className="mt-6 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-cinzel font-bold tracking-widest uppercase shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 transition-all flex items-center gap-2 mx-auto animate-bounce"
+                    >
+                       <Zap size={20} />
+                       Iniciar Degustação (30 min)
+                    </button>
+                 )}
+                 {trialConsumed && accessType !== 'full' && (
+                   <div className="mt-4 px-6 py-3 bg-slate-100 rounded-full border border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                     <Lock size={14} /> Período de teste encerrado
+                   </div>
+                 )}
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+               {/* CARDS COM BLOQUEIO VISUAL SE ACESSO FOR NONE */}
+               <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl transition-all duration-500 ${accessType === 'none' ? 'opacity-50 grayscale pointer-events-none filter blur-sm' : ''}`}>
                   {/* Card Mesa Real */}
                   <div 
                     onClick={() => { setView('board'); setSpreadType('mesa-real'); setIsManualMode(false); }}
@@ -1134,28 +1331,37 @@ const App: React.FC = () => {
               <div className={`bg-white border-slate-200 shadow-lg border rounded-[2rem] p-8`}>
                  <div className="flex items-center gap-3 mb-6"><div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500"><ShieldCheck size={20}/></div><h4 className={`font-cinzel font-bold text-sm uppercase tracking-widest text-slate-900`}>Informações de Licença</h4></div>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-1"><span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block">Tipo de Licença</span><div className={`text-sm font-bold text-indigo-700`}>Plano Vitalício (Premium)</div></div>
+                    <div className="space-y-1"><span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block">Tipo de Licença</span><div className={`text-sm font-bold text-indigo-700`}>{accessType === 'trial' ? "Modo Degustação" : accessType === 'full' ? "Plano Vitalício (Premium)" : "Sem Acesso"}</div></div>
                     <div className="space-y-1"><span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block">Data de Início</span><div className={`text-sm font-bold text-slate-700`}>15 de Dezembro, 2023</div></div>
                     <div className="space-y-1"><span className="text-[10px] font-black uppercase text-slate-500 tracking-widest block">E-mail Cadastrado</span><div className={`text-sm font-bold text-slate-700`}>estudante@lumina.com</div></div>
                  </div>
               </div>
-              <div className={`bg-white border-slate-200 shadow-lg border rounded-[2rem] p-8`}>
-                 <div className="flex items-center justify-between mb-6">
-                   <div className="flex items-center gap-3"><div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500"><History size={20}/></div><h4 className={`font-cinzel font-bold text-sm uppercase tracking-widest text-slate-900`}>Minhas Tiragens Salvas</h4></div>
-                   <div className="flex items-center gap-4">
-                     <button onClick={() => setIsExcludingReadings(!isExcludingReadings)} className={`text-[10px] font-black uppercase transition-colors flex items-center gap-1.5 ${isExcludingReadings ? 'text-rose-500' : 'text-indigo-500'} hover:underline`}>{isExcludingReadings ? <><CheckCircle2 size={12}/> Concluir</> : <><Edit3 size={12}/> Editar</>}</button>
+              
+              {/* HISTÓRICO OCULTO NO MODO TRIAL */}
+              {accessType === 'full' ? (
+                <div className={`bg-white border-slate-200 shadow-lg border rounded-[2rem] p-8`}>
+                   <div className="flex items-center justify-between mb-6">
+                     <div className="flex items-center gap-3"><div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500"><History size={20}/></div><h4 className={`font-cinzel font-bold text-sm uppercase tracking-widest text-slate-900`}>Minhas Tiragens Salvas</h4></div>
+                     <div className="flex items-center gap-4">
+                       <button onClick={() => setIsExcludingReadings(!isExcludingReadings)} className={`text-[10px] font-black uppercase transition-colors flex items-center gap-1.5 ${isExcludingReadings ? 'text-rose-500' : 'text-indigo-500'} hover:underline`}>{isExcludingReadings ? <><CheckCircle2 size={12}/> Concluir</> : <><Edit3 size={12}/> Editar</>}</button>
+                     </div>
                    </div>
-                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {savedReadings.map(reading => (
-                      <div key={reading.id} onClick={() => !isExcludingReadings && handleLoadReading(reading)} className={`p-4 rounded-2xl border flex items-center justify-between group cursor-pointer transition-all bg-slate-50 border-slate-100 hover:border-indigo-300`}>
-                        <div className="flex items-center gap-4"><div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-white border`}>{reading.type === 'mesa-real' ? <LayoutGrid size={20} className="text-indigo-400"/> : <Clock size={20} className="text-amber-400"/>}</div><div><div className={`text-sm font-bold text-slate-900`}>{reading.title}</div><div className="text-[10px] text-slate-500">Salvo em {reading.date}</div></div></div>
-                        <button onClick={(e) => { e.stopPropagation(); if (isExcludingReadings) handleDeleteReading(reading.id); }} className={`p-2 rounded-lg transition-colors ${isExcludingReadings ? 'text-rose-500 hover:bg-rose-500/10' : 'group-hover:bg-indigo-600 group-hover:text-white text-slate-500 shadow-sm'}`}>{isExcludingReadings ? <Trash2 size={18} /> : <ChevronRight size={18} />}</button>
-                      </div>
-                    ))}
-                    {savedReadings.length === 0 && <div className="col-span-2 py-8 text-center opacity-40"><p className="text-sm">Nenhuma leitura salva.</p></div>}
-                 </div>
-              </div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {savedReadings.map(reading => (
+                        <div key={reading.id} onClick={() => !isExcludingReadings && handleLoadReading(reading)} className={`p-4 rounded-2xl border flex items-center justify-between group cursor-pointer transition-all bg-slate-50 border-slate-100 hover:border-indigo-300`}>
+                          <div className="flex items-center gap-4"><div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-white border`}>{reading.type === 'mesa-real' ? <LayoutGrid size={20} className="text-indigo-400"/> : <Clock size={20} className="text-amber-400"/>}</div><div><div className={`text-sm font-bold text-slate-900`}>{reading.title}</div><div className="text-[10px] text-slate-500">Salvo em {reading.date}</div></div></div>
+                          <button onClick={(e) => { e.stopPropagation(); if (isExcludingReadings) handleDeleteReading(reading.id); }} className={`p-2 rounded-lg transition-colors ${isExcludingReadings ? 'text-rose-500 hover:bg-rose-500/10' : 'group-hover:bg-indigo-600 group-hover:text-white text-slate-500 shadow-sm'}`}>{isExcludingReadings ? <Trash2 size={18} /> : <ChevronRight size={18} />}</button>
+                        </div>
+                      ))}
+                      {savedReadings.length === 0 && <div className="col-span-2 py-8 text-center opacity-40"><p className="text-sm">Nenhuma leitura salva.</p></div>}
+                   </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-8 text-center opacity-60">
+                   <Lock className="mx-auto mb-2 text-slate-400" size={24} />
+                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Histórico indisponível no Modo Degustação</p>
+                </div>
+              )}
             </div>
           )}
         </div>
