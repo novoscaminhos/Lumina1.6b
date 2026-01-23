@@ -272,9 +272,22 @@ const App: React.FC = () => {
   }
 
   if (accessFromUrl === 'trial') {
-    localStorage.setItem('lumina_access_type', 'trial');
-    // NÃO retorna aqui — deixa o fluxo normal validar tempo/consumo
+  const isConsumed = localStorage.getItem('lumina_trial_consumed') === 'true';
+
+  if (isConsumed) {
+    setAccessType('none');
+    localStorage.removeItem('lumina_access_type');
+    return;
   }
+
+  const now = Date.now();
+  localStorage.setItem('lumina_access_type', 'trial');
+  localStorage.setItem('lumina_trial_token', now.toString());
+
+  setAccessType('trial');
+  setTrialExpired(false);
+  return;
+}
 
   // --- fluxo original continua ---
   const storedAccess = localStorage.getItem('lumina_access_type') as AccessType | null;
