@@ -248,136 +248,143 @@ const App: React.FC = () => {
   const [zoomMenuOpen, setZoomMenuOpen] = useState(false);
   const [unscaledHeight, setUnscaledHeight] = useState(800); 
 
- // --- ACCESS CONTROL & TRIAL MODE STATE ---
-const [accessType, setAccessType] = useState<AccessType>('none');
-const [trialExpired, setTrialExpired] = useState(false);
+  // --- ACCESS CONTROL & TRIAL MODE STATE ---
+  const [accessType, setAccessType] = useState<AccessType>('none');
+  const [trialExpired, setTrialExpired] = useState(false);
+  // Inicialização Lazy do trialConsumed para garantir que leia do LocalStorage na montagem
+  const [trialConsumed, setTrialConsumed] = useState(() => localStorage.getItem('lumina_trial_consumed') === 'true');
+  const [trialTimeLeft, setTrialTimeLeft] = useState<string>("");
 
-// Inicialização Lazy do trialConsumed para garantir leitura correta
-const [trialConsumed, setTrialConsumed] = useState(
-  () => localStorage.getItem('lumina_trial_consumed') === 'true'
-);
+  // Derived state to replace previous boolean
+  const isTrialMode = accessType === 'trial';
 
-const [trialTimeLeft, setTrialTimeLeft] = useState<string>("");
+  // --- ACCESS CONTROL INITIALIZATION ---
+  useEffect(() => {
+  // 🔑 PRIORIDADE MÁXIMA: acesso vindo do portal/splash via URL
+  const params = new URLSearchParams(window.location.search);
+  const accessFromUrl = params.get('access') as AccessType | null;
 
-// Derived state
-const isTrialMode = accessType === 'trial';
-
-// --- ACCESS CONTROL INITIALIZATION ---
-useEffect(() => {
-  const storedAccess = localStorage.getItem('lumina_access_type') as AccessType | null;
-  const consumed = localStorage.getItem('lumina_trial_consumed') === 'true';
-  const trialToken = localStorage.getItem('lumina_trial_token');
-
-  // 🔐 CORREÇÃO 1 — DETECÇÃO DE ACESSO FULL REAL
-  // Se existe token de acesso válido vindo do portal, isso É FULL
-  const fullToken = localStorage.getItem('lumina_token');
-
-  // 1. PRECEDÊNCIA ABSOLUTA: FULL
-  if (storedAccess === 'full' || fullToken) {
+  if (accessFromUrl === 'full') {
+    localStorage.setItem('lumina_access_type', 'full');
     setAccessType('full');
     setTrialExpired(false);
     return;
   }
 
-  // 2. TRIAL MODE
-  if (storedAccess === 'trial') {
+  if (accessFromUrl === 'trial') {
+    localStorage.setItem('lumina_access_type', 'trial');
+    // NÃO retorna aqui — deixa o fluxo normal validar tempo/consumo
+  }
 
-    // Trial já consumido → invalida estado trial
-    if (consumed) {
-      setTrialConsumed(true);
-      setAccessType('none');
-      localStorage.removeItem('lumina_access_type');
+  // --- fluxo original continua ---
+  const storedAccess = localStorage.getItem('lumina_access_type') as AccessType | null;
+  const consumed = localStorage.getItem('lumina_trial_consumed') === 'true';
+  const token = localStorage.getItem('lumina_trial_token');
+
+    // 1. PRECEDÊNCIA: Full Access
+    if (storedAccess === 'full') {
+      setAccessType('full');
+      setTrialExpired(false);
       return;
     }
 
-    // Verificação do token de trial
-    if (trialToken) {
-      const startTime = parseInt(trialToken, 10);
-      const now = Date.now();
-      const elapsed = now - startTime;
+    // 2. TRIAL MODE Check
+    if (storedAccess === 'trial') {
+      // Se já consumido, estado inválido (não deveria ser 'trial'). Força 'none' e garante flag.
+      if (consumed) {
+         setTrialConsumed(true);
+         setAccessType('none'); 
+         localStorage.removeItem('lumina_access_type'); // Limpa estado inconsistente
+         return;
+      }
 
-      if (elapsed >= TRIAL_DURATION_MS) {
-        // Expirado
-        setAccessType('trial'); // mantém trial para exibir overlay
+      // Se tem token, verifica tempo
+      if (token) {
+        const startTime = parseInt(token, 10);
+        const now = Date.now();
+        const elapsed = now - startTime;
+
+        if (elapsed >= TRIAL_DURATION_MS) {
+          // Expirou
+          setAccessType('trial'); // Define como trial para mostrar o overlay de expirado
+          setTrialExpired(true);
+          setTrialConsumed(true);
+          localStorage.setItem('lumina_trial_consumed', 'true');
+        } else {
+          // Trial Válido
+          setAccessType('trial');
+          setTrialExpired(false);
+        }
+      } else {
+        // Estado inconsistente (tem 'trial' no access type mas sem token). Reset para none.
+        setAccessType('none');
+        localStorage.removeItem('lumina_access_type');
+      }
+    } else {
+      // Default: None
+      setAccessType('none');
+    }
+  }, []);
+
+  // --- TIMER LOGIC (Only runs if Trial Active & Not Expired) ---
+  useEffect(() => {
+    if (accessType !== 'trial' || trialExpired) return;
+
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('lumina_trial_token');
+      if (!token) return;
+
+      const startTime = parseInt(token, 10);
+      const now = Date.now();
+      const remaining = TRIAL_DURATION_MS - (now - startTime);
+
+      if (remaining <= 0) {
+        // EXPIRED!
         setTrialExpired(true);
         setTrialConsumed(true);
         localStorage.setItem('lumina_trial_consumed', 'true');
+        clearInterval(interval);
       } else {
-        // Trial válido
-        setAccessType('trial');
-        setTrialExpired(false);
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        setTrialTimeLeft(`${m}:${s.toString().padStart(2, '0')}`);
       }
-    } else {
-      // Estado inconsistente: trial sem token
-      setAccessType('none');
-      localStorage.removeItem('lumina_access_type');
-    }
+    }, 1000);
 
-    return;
-  }
+    return () => clearInterval(interval);
+  }, [accessType, trialExpired]);
 
-  // 3. DEFAULT: NONE (Portal)
-  setAccessType('none');
 
-}, []);
-
-// --- TIMER LOGIC (Only runs if Trial Active & Not Expired) ---
-useEffect(() => {
-  if (accessType !== 'trial' || trialExpired) return;
-
-  const interval = setInterval(() => {
-    const token = localStorage.getItem('lumina_trial_token');
-    if (!token) return;
-
-    const startTime = parseInt(token, 10);
-    const now = Date.now();
-    const remaining = TRIAL_DURATION_MS - (now - startTime);
-
-    if (remaining <= 0) {
-      // EXPIRAÇÃO
-      setTrialExpired(true);
+  const handleStartTrial = () => {
+    // Verifica se já consumiu
+    const isConsumed = localStorage.getItem('lumina_trial_consumed') === 'true';
+    if (isConsumed) {
+      alert("O período de degustação já foi utilizado neste dispositivo.");
       setTrialConsumed(true);
-      localStorage.setItem('lumina_trial_consumed', 'true');
-      clearInterval(interval);
-    } else {
-      const m = Math.floor(remaining / 60000);
-      const s = Math.floor((remaining % 60000) / 1000);
-      setTrialTimeLeft(`${m}:${s.toString().padStart(2, '0')}`);
+      return;
     }
-  }, 1000);
 
-  return () => clearInterval(interval);
-}, [accessType, trialExpired]);
+    const now = Date.now();
+    // DEFINE CHAVES
+    localStorage.setItem('lumina_access_type', 'trial');
+    localStorage.setItem('lumina_trial_token', now.toString());
+    
+    // ATUALIZA ESTADO
+    setAccessType('trial');
+    setTrialExpired(false);
+    // Permanece na home, mas desbloqueia a interface
+  };
 
-// --- START TRIAL ---
-const handleStartTrial = () => {
-  const isConsumed = localStorage.getItem('lumina_trial_consumed') === 'true';
-  if (isConsumed) {
-    alert("O período de degustação já foi utilizado neste dispositivo.");
-    setTrialConsumed(true);
-    return;
-  }
+  const handleExitTrial = () => {
+    // Remove apenas o estado de acesso ativo
+    localStorage.removeItem('lumina_access_type');
 
-  const now = Date.now();
+    setAccessType('none');
+    setTrialExpired(false);
 
-  localStorage.setItem('lumina_access_type', 'trial');
-  localStorage.setItem('lumina_trial_token', now.toString());
-
-  setAccessType('trial');
-  setTrialExpired(false);
-};
-
-// --- EXIT TRIAL ---
-const handleExitTrial = () => {
-  // Não remove token nem consumed (histórico preservado)
-  localStorage.removeItem('lumina_access_type');
-
-  setAccessType('none');
-  setTrialExpired(false);
-  setView('home');
-
-  window.location.reload();
-};
+    // 🔁 REDIRECIONAMENTO EXPLÍCITO AO PORTAL
+    window.location.href = 'https://novoscaminhos.github.io/portal-lumina/index.html';
+  };
 
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 2.5));
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.4));
