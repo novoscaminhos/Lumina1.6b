@@ -1150,21 +1150,62 @@ const App: React.FC = () => {
             </>
           )}
 
-          {/* ... (Outras views: glossary, fundamentals, study, profile mantidas) ... */}
           {view === 'glossary' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {LENORMAND_CARDS.map(card => (
-                <div key={card.id} className={`bg-white border-slate-200 text-slate-900 shadow-lg border rounded-2xl p-6 hover:border-indigo-500/50 transition-colors`}>
+                <div key={card.id} className={`bg-white border-slate-200 text-slate-900 shadow-lg border rounded-2xl p-6 hover:border-indigo-500/50 transition-colors flex flex-col h-full`}>
+                  {/* Header */}
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-16 rounded-lg bg-slate-800 overflow-hidden shrink-0"><img src={CARD_IMAGES[card.id] || FALLBACK_IMAGE} className="w-full h-full object-cover" alt="" /></div>
-                    <div><h3 className="text-sm font-cinzel font-bold">{card.id}. {card.name}</h3><span className={`text-[8px] font-black uppercase ${card.polarity === Polarity.POSITIVE ? 'text-emerald-500' : 'text-rose-500'}`}>{card.polarity}</span></div>
+                    <div className="w-12 h-16 rounded-lg bg-slate-800 overflow-hidden shrink-0">
+                      <img src={CARD_IMAGES[card.id] || FALLBACK_IMAGE} className="w-full h-full object-cover" alt="" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-cinzel font-bold">{card.id}. {card.name}</h3>
+                      <div className="flex items-center gap-2">
+                         <span className={`text-[8px] font-black uppercase ${card.polarity === Polarity.POSITIVE ? 'text-emerald-500' : card.polarity === Polarity.NEGATIVE ? 'text-rose-500' : 'text-slate-500'}`}>{card.polarity}</span>
+                         <span className="text-[8px] text-slate-400 border-l border-slate-300 pl-2">{card.suit}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed mb-4 italic">"{card.briefInterpretation}"</p>
-                  <div className="flex flex-wrap gap-1">{card.keywords.map((k, i) => <span key={i} className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase bg-indigo-50 text-indigo-800 font-bold`}>{k}</span>)}</div>
+
+                  {/* Content */}
+                  <div className="space-y-4 flex-grow">
+                     <div>
+                       <h4 className="text-[10px] font-black uppercase text-indigo-600 mb-1">Mensagem Geral</h4>
+                       <p className="text-[11px] text-slate-600 leading-relaxed italic">"{card.briefInterpretation}"</p>
+                     </div>
+                     
+                     {/* Detailed Sections (Sincronização) */}
+                     <div className="grid grid-cols-1 gap-3 pt-2 border-t border-slate-100">
+                        {card.interpretationAtOrigin && (
+                          <div><span className="text-[9px] font-bold text-slate-900 uppercase flex items-center gap-1"><Sparkles size={10}/> Futuro</span><p className="text-[10px] text-slate-500 leading-snug">{card.interpretationAtOrigin}</p></div>
+                        )}
+                        {card.amor && (
+                          <div><span className="text-[9px] font-bold text-rose-600 uppercase flex items-center gap-1"><Heart size={10}/> Amor</span><p className="text-[10px] text-slate-500 leading-snug">{card.amor}</p></div>
+                        )}
+                        {card.trabalho && (
+                          <div><span className="text-[9px] font-bold text-blue-600 uppercase flex items-center gap-1"><Briefcase size={10}/> Trabalho</span><p className="text-[10px] text-slate-500 leading-snug">{card.trabalho}</p></div>
+                        )}
+                        {card.dinheiro && (
+                          <div><span className="text-[9px] font-bold text-emerald-600 uppercase flex items-center gap-1"><Coins size={10}/> Dinheiro</span><p className="text-[10px] text-slate-500 leading-snug">{card.dinheiro}</p></div>
+                        )}
+                        {card.conselhos && (
+                          <div className="bg-amber-50 p-2 rounded-lg border border-amber-100"><span className="text-[9px] font-bold text-amber-700 uppercase flex items-center gap-1"><Lightbulb size={10}/> Conselho</span><p className="text-[10px] text-amber-900/80 leading-snug italic">{card.conselhos}</p></div>
+                        )}
+                     </div>
+                  </div>
+
+                  {/* Footer Characteristics */}
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                     <div className="flex flex-wrap gap-1">
+                       {card.keywords.map((k, i) => <span key={i} className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold uppercase bg-slate-100 text-slate-600`}>{k}</span>)}
+                     </div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
+          
           {view === 'fundamentals' && (
             <div className="max-w-4xl mx-auto space-y-12 pb-20">
               {FUNDAMENTALS_DATA.map(mod => (
