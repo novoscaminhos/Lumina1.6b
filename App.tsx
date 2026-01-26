@@ -419,25 +419,24 @@ const App: React.FC = () => {
       content.style.transform = originalTransform;
 
       // Cálculo de melhor ajuste visando a faixa de 65% a 75% em desktop
-      const padding = 100; 
+      const padding = spreadType === 'relogio' ? 40 : 100; 
       const scaleW = (containerWidth - padding) / contentWidth;
       const scaleH = (containerHeight - padding) / contentHeight;
       
       let fitScale = Math.min(scaleW, scaleH);
       
-      const isDesktop = window.innerWidth >= 1024;
-      if (isDesktop) {
-        // Garantindo que no desktop o zoom fique na faixa solicitada de 65% a 75%
-        // se o espaço permitir um zoom maior, travamos em 75%. Se for menor, mantemos o fit real.
-        fitScale = Math.min(fitScale, 0.75);
-        if (fitScale < 0.65) {
-          // Se o espaço for muito pequeno, permitimos o zoom real para caber, 
-          // mas tentamos não descer muito de 65% a menos que necessário.
-        } else {
-          // Se estiver entre 65 e 75, mantemos o fitScale calculado.
-        }
+      // AJUSTE DINÂMICO PARA RELÓGIO
+      if (spreadType === 'relogio') {
+        // Permite zoom maior para o relógio, aproveitando melhor o espaço circular
+        fitScale = Math.min(fitScale, 1.3); // Cap mais generoso
+        fitScale = Math.max(0.6, fitScale); // Minimo legível
       } else {
-        fitScale = Math.min(fitScale, 1.0);
+        const isDesktop = window.innerWidth >= 1024;
+        if (isDesktop) {
+          fitScale = Math.min(fitScale, 0.75);
+        } else {
+          fitScale = Math.min(fitScale, 1.0);
+        }
       }
       
       fitScale = Math.max(0.25, fitScale);
@@ -1455,14 +1454,50 @@ const App: React.FC = () => {
                   )}
                   {spreadType === 'relogio' && axisDataRelogio && (
                     <div className="grid gap-4">
+                      {/* NOVA SESSÃO: DINÂMICA DO RELÓGIO (Temporalidade e Interação) */}
                       <div className={`p-4 rounded-2xl border bg-indigo-50 border-indigo-100 shadow-sm`}>
-                        <h5 className="text-[13px] font-black text-indigo-800 uppercase flex items-center gap-2 mb-2"><Scale size={12}/> Eixo de Oposição (180°)</h5>
-                        <p className={`text-[13px] font-bold mb-2 text-indigo-950`}>{axisDataRelogio.axis?.name}</p>
-                        <p className={`text-[12px] mb-4 text-slate-800`}>{axisDataRelogio.axis?.description}</p>
+                        <h5 className="text-[13px] font-black text-indigo-800 uppercase flex items-center gap-2 mb-4"><Clock size={12}/> Dinâmica do Relógio</h5>
+                        
+                        {/* 1. Temporalidade */}
+                        {currentHouse?.month && (
+                          <div className="mb-4 pb-4 border-b border-indigo-200/50">
+                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Temporalidade</span>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[12px] font-bold text-indigo-950">{currentHouse.month}</span>
+                              <span className="text-[10px] px-2 py-0.5 bg-white rounded border border-indigo-100 text-indigo-600 font-bold uppercase">{currentHouse.zodiac}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 2. Influência Central */}
+                        {board[12] && (
+                          <div className="mb-4 pb-4 border-b border-indigo-200/50">
+                            <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Filtro Regente (Centro)</span>
+                            <div className="flex items-center gap-2">
+                               <span className="text-[12px] font-bold text-indigo-950">{LENORMAND_CARDS.find(c => c.id === board[12])?.name}</span>
+                               <span className="text-[10px] text-indigo-600/70 italic">modula esta casa</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 3. Interação Carta x Casa */}
+                        <div className="mb-2">
+                           <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Interação</span>
+                           <p className="text-[11px] leading-snug text-slate-700">
+                             A energia de <span className="font-bold text-indigo-900">{selectedCard?.name}</span> atua sobre o tema <span className="font-bold text-indigo-900">{currentHouse?.theme}</span>.
+                           </p>
+                        </div>
+                      </div>
+
+                      {/* Eixo de Oposição (Mantido, mas visualmente integrado) */}
+                      <div className={`p-4 rounded-2xl border bg-white border-slate-200 shadow-sm`}>
+                        <h5 className="text-[13px] font-black text-slate-700 uppercase flex items-center gap-2 mb-2"><Scale size={12}/> Eixo de Oposição (180°)</h5>
+                        <p className={`text-[13px] font-bold mb-2 text-slate-900`}>{axisDataRelogio.axis?.name}</p>
+                        <p className={`text-[11px] mb-4 text-slate-500 leading-snug`}>{axisDataRelogio.axis?.description}</p>
                         {axisDataRelogio.oppositeCard && (
-                          <div className={`p-3 rounded-xl border animate-in fade-in duration-500 bg-white border-slate-200 shadow-sm`}>
+                          <div className={`p-3 rounded-xl border animate-in fade-in duration-500 bg-slate-50 border-slate-200 shadow-inner`}>
                             <div className="flex justify-between items-center mb-1"><span className={`text-[11px] font-bold text-indigo-900`}>{axisDataRelogio.oppositeCard.name} (Oposição)</span><span className="text-[9px] text-slate-500 font-black uppercase">Casa {axisDataRelogio.oppositeHouseId}</span></div>
-                            <p className={`text-[11px] italic leading-tight text-slate-800`}>"{axisDataRelogio.oppositeCard.briefInterpretation}"</p>
+                            <p className={`text-[10px] italic leading-tight text-slate-600`}>"{axisDataRelogio.oppositeCard.briefInterpretation}"</p>
                           </div>
                         )}
                       </div>

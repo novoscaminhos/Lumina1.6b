@@ -52,10 +52,19 @@ export const getDetailedCardAnalysis = async (
         diagonal_inferior_descendente: Geometry.getDiagonaisInferiores(selectedIndex).map(idx => getCardName(boardState[idx]))
     };
   } else if (spreadType === 'relogio') {
+    const centerCardName = getCardName(boardState[12]);
     geometries = {
+        temporal_context: {
+            month: house.month,
+            zodiac: house.zodiac,
+            house_theme: house.theme
+        },
+        central_influence: {
+            center_card: centerCardName,
+            role: "Filtro Central e Regente do Ano"
+        },
         oposto: getCardName(boardState[Geometry.getOposicaoRelogio(selectedIndex)]),
         eixo_conceitual: Geometry.getEixoConceitualRelogio(selectedIndex),
-        carta_central_reguladora: getCardName(boardState[12])
     };
   } else if (spreadType === 'mesa-9') {
      // Lógica específica para Mesa de 9
@@ -103,11 +112,14 @@ export const getDetailedCardAnalysis = async (
     
     1. **Dinâmica Temporal e Fluxo**: 
        Explique a escala de tempo (${card?.timingScale}) e como a categoria (${card?.timingCategory}) modula a rapidez dos acontecimentos no tema ${theme}.
+       ${spreadType === 'relogio' ? 'IMPORTANTE: No Relógio, relacione explicitamente com o mês de ' + house.month + ' e a estação.' : ''}
     
     2. **Foco Temático: ${theme}**: Manifestação da energia na casa "${house.name}".
+       ${spreadType === 'relogio' ? 'Analise como a carta central (' + (context.geometries as any).central_influence?.center_card + ') filtra ou altera esta energia.' : ''}
     
     3. **A Origem do Tema (Técnica da Ponte)**: 
        Explique o que a posição do dono da casa revela sobre a causa raiz sobre o prisma do tema "${theme}".
+       (Se for Relógio, substitua Ponte por Interação Casa x Carta).
     
     4. **Análise de Campo e Geometria**: 
        Como os espelhamentos ou diagonais modulam essa energia focada em "${theme}"?
