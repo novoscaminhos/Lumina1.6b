@@ -31,6 +31,11 @@ export interface LenormandCard {
   symbolicEnergy: string;
   suit: string;
   description: string;
+  // Novos campos ricos do JSON Mestre
+  amor?: string;
+  trabalho?: string;
+  dinheiro?: string;
+  conselhos?: string;
 }
 
 export interface LenormandHouse {
