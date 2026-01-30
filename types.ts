@@ -50,7 +50,11 @@ export interface LenormandHouse {
   zodiac?: string;
 }
 
-export type SpreadType = 'mesa-real' | 'relogio' | 'mesa-9';
+export type SpreadType =
+  | 'mesa-real'
+  | 'relogio'
+  | 'mesa-9'
+  | 'templo-afrodite';
 
 // GeometryFilter type for board filtering techniques
 export type GeometryFilter = 'nenhuma' | 'todas' | 'ponte' | 'cavalo' | 'moldura' | 'veredito' | 'diagonais' | 'centro' | 'cruz';
@@ -81,7 +85,7 @@ export interface FundamentalModule {
 export interface StudyModeState {
   active: boolean;
   topicId: string | null;
-  practiceTarget: 'mesa-real' | 'relogio' | 'mesa-9' | null;
+  ppracticeTarget: SpreadType | null;
   splitView: boolean;
 }
 

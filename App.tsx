@@ -578,9 +578,19 @@ const App: React.FC = () => {
   const [activeBalloons, setActiveBalloons] = useState<StudyBalloon[]>([]);
 
   const [openConceptId, setOpenConceptId] = useState<string | null>(null);
+  const getSpreadSize = (spread: SpreadType) => {
+    switch (spread) {
+      case 'templo-afrodite':
+        return 7;
+      case 'mesa-9':
+        return 9;
+      default:
+        return 36;
+    }
+};
 
   useEffect(() => {
-    if (isManualMode && !isHistoryView) setBoard(new Array(36).fill(null));
+    if (isManualMode && !isHistoryView) setBoard(new Array(getSpreadSize(spreadType)).fill(null));
     else if (!isHistoryView) handleShuffle();
     setSelectedHouse(null);
     setCardAnalysis(null);
@@ -720,7 +730,8 @@ const App: React.FC = () => {
       const titleMap: Record<string, string> = {
         'mesa-real': 'Mesa Real (36 Casas)',
         'mesa-9': 'Tiragem de 9 Cartas',
-        'relogio': 'Tiragem do Relógio (12 Casas)'
+        'relogio': 'Tiragem do Relógio (12 Casas)',
+        'templo-afrodite': 'Templo de Afrodite (7 Cartas)'
       };
       const title = titleMap[spreadType] || 'Leitura Lumina';
 
@@ -954,8 +965,8 @@ const App: React.FC = () => {
           <NavItem icon={<LayoutGrid size={18}/>} label="Mesa Real" active={view === 'board' && spreadType === 'mesa-real' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('mesa-real'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
           <NavItem icon={<Grid3x3 size={18}/>} label="Mesa de 9" active={view === 'board' && spreadType === 'mesa-9' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('mesa-9'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
           <NavItem icon={<Clock size={18}/>} label="Relógio" active={view === 'board' && spreadType === 'relogio' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('relogio'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
+          <NavItem icon={<Heart size={18}/>} label="Templo de Afrodite" active={view === 'board' && spreadType === 'templo-afrodite' && !studyMode.active} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setSpreadType('templo-afrodite'); setIsManualMode(false); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
           <NavItem icon={<Book size={18}/>} label="Glossário" active={view === 'glossary'} collapsed={sidebarCollapsed} onClick={() => {setView('glossary'); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
-          <NavItem icon={<BookOpen size={18}/>} label="Fundamentos" active={view === 'fundamentals'} collapsed={sidebarCollapsed} onClick={() => {setView('fundamentals'); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
           <NavItem icon={<Edit3 size={18}/>} label="Personalizada" active={view === 'board' && isManualMode} collapsed={sidebarCollapsed} onClick={() => {setView('board'); setIsManualMode(true); setStudyMode(prev => ({ ...prev, active: false }));}} disabled={accessType === 'none'} />
           <NavItem icon={<GraduationCap size={18}/>} label="📘 Modo Estudo" active={view === 'study' || (view === 'board' && studyMode.active)} collapsed={sidebarCollapsed} onClick={() => {setView('study'); setStudyMode(prev => ({ ...prev, active: true }));}} disabled={accessType === 'none'} />
         </nav>

@@ -67,15 +67,32 @@ export const getDetailedCardAnalysis = async (
         eixo_conceitual: Geometry.getEixoConceitualRelogio(selectedIndex),
     };
   } else if (spreadType === 'mesa-9') {
-     // Lógica específica para Mesa de 9
-     const isCenter = selectedIndex === 4;
-     geometries = {
-         posicao_na_grade: isCenter ? "CENTRO (Foco)" : "Periferia/Influência",
-         cruz_central: Geometry.getCruz9Cards(selectedIndex).map(idx => getCardName(boardState[idx])),
-         diagonais_x: Geometry.getDiagonais9Cards(selectedIndex).map(idx => getCardName(boardState[idx])),
-         foco_central_leitura: getCardName(boardState[4])
-     };
-  }
+  const isCenter = selectedIndex === 4;
+  geometries = {
+    posicao_na_grade: isCenter ? "CENTRO (Foco)" : "Periferia/Influência",
+    cruz_central: Geometry.getCruz9Cards(selectedIndex).map(idx => getCardName(boardState[idx])),
+    diagonais_x: Geometry.getDiagonais9Cards(selectedIndex).map(idx => getCardName(boardState[idx])),
+    foco_central_leitura: getCardName(boardState[4])
+  };
+}
+else if (spreadType === 'templo-afrodite') {
+  geometries = {
+    estrutura_templo: {
+      total_cartas: 7,
+      natureza: "Tiragem temática dedicada a vínculos afetivos, desejo, entrega e alinhamento emocional."
+    },
+    foco_central: getCardName(boardState[3]),
+    eixo_relacional: [
+      getCardName(boardState[1]),
+      getCardName(boardState[5])
+    ],
+    base_emocional: [
+      getCardName(boardState[0]),
+      getCardName(boardState[6])
+    ],
+    coroa_do_templo: getCardName(boardState[2])
+  };
+}
 
   const context = {
     spreadType,
@@ -100,7 +117,12 @@ export const getDetailedCardAnalysis = async (
     Sua missão é gerar uma SÍNTESE PEDAGÓGICA para um estudante de nível ${level}.
     
     EXPANSÃO TEMÁTICA ATUAL (FOCO): ${theme}
-    TIPO DE TIRAGEM: ${spreadType === 'mesa-real' ? 'Mesa Real (36 casas)' : spreadType === 'mesa-9' ? 'Quadrado de 9 (Mini-Mesa)' : 'Tiragem em Relógio (12 meses/casas)'}
+    TIPO DE TIRAGEM: ${
+  spreadType === 'mesa-real' ? 'Mesa Real (36 casas)' :
+  spreadType === 'mesa-9' ? 'Quadrado de 9 (Mini-Mesa)' :
+  spreadType === 'relogio' ? 'Tiragem em Relógio (12 meses/casas)' :
+  'Templo de Afrodite (7 cartas – dinâmica afetiva)'
+}
     CONTEXTO TÉCNICO: ${JSON.stringify(context, null, 2)}
     
     INSTRUÇÕES ESPECÍFICAS SOBRE O TEMPO:
