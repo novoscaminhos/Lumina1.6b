@@ -60,7 +60,6 @@ export const getDiagonaisInferiores = (index: number) => {
 // ==========================================
 
 export const getDiagonais9Cards = (index: number) => {
-  // Retorna vizinhos diagonais (exclui o próprio index)
   const mainDiag = [0, 4, 8];
   const antiDiag = [2, 4, 6];
   let result: number[] = [];
@@ -70,7 +69,6 @@ export const getDiagonais9Cards = (index: number) => {
 };
 
 export const getCruz9Cards = (index: number) => {
-  // Retorna vizinhos em cruz (exclui o próprio index)
   const vertical = [1, 4, 7];
   const horizontal = [3, 4, 5];
   let result: number[] = [];
@@ -81,10 +79,9 @@ export const getCruz9Cards = (index: number) => {
 
 export const isCenter9Cards = (index: number) => index === 4;
 
-// Funções para Visualização Pedagógica (Formas Completas)
 export const getFixedCross9 = () => [1, 3, 4, 5, 7];
 export const getFixedDiagonals9 = () => [0, 2, 4, 6, 8];
-export const getFixedColumns9 = () => [0, 1, 2, 3, 4, 5, 6, 7, 8]; // Todas as cartas fazem parte das colunas
+export const getFixedColumns9 = () => [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 // ==========================================
 // LÓGICA RELÓGIO
@@ -149,6 +146,49 @@ export const getEixoConceitualRelogio = (index: number): string | null => {
   return getAxisDataRelogio(index)?.name || null;
 };
 
-export const getDescricaoEixoRelogio = (index: number): string => {
-  return getAxisDataRelogio(index)?.description || "Eixo de modulação temporal.";
-}
+// ==========================================
+// LÓGICA TEMPLO DE AFRODITE (NOVO)
+// ==========================================
+
+/**
+ * Mapeamento de pares no Templo de Afrodite:
+ * Casa 0 <-> Casa 1 (Pensamentos)
+ * Casa 2 <-> Casa 3 (Sentimentos)
+ * Casa 4 <-> Casa 5 (Atitudes/Ação)
+ * Casa 6 (Síntese/Destino)
+ */
+export const getParAfrodite = (index: number): number => {
+  if (index === 6) return -1; // Síntese não tem par direto lateral
+  return index % 2 === 0 ? index + 1 : index - 1;
+};
+
+export const getCamadaAfrodite = (index: number): 'Mental' | 'Emocional' | 'Físico' | 'Síntese' => {
+  if (index === 0 || index === 1) return 'Mental';
+  if (index === 2 || index === 3) return 'Emocional';
+  if (index === 4 || index === 5) return 'Físico';
+  return 'Síntese';
+};
+
+export const getDescricaoAfrodite = (index: number): string => {
+  const camada = getCamadaAfrodite(index);
+  const isConsulente = index % 2 === 0 && index !== 6;
+
+  switch (camada) {
+    case 'Mental':
+      return isConsulente 
+        ? "Representa seus pensamentos, ideais e visão racional sobre o parceiro."
+        : "Representa como o parceiro racionaliza a relação e o que pensa de você.";
+    case 'Emocional':
+      return isConsulente 
+        ? "Revela seus sentimentos profundos, medos e desejos afetivos."
+        : "Revela o estado emocional do parceiro e o que ele nutre por você.";
+    case 'Físico':
+      return isConsulente 
+        ? "Indica sua postura prática, atração física e ações externas no relacionamento."
+        : "Indica as intenções sexuais, atitudes e o comportamento prático do parceiro.";
+    case 'Síntese':
+      return "A energia central que define o futuro próximo ou o estado atual da união.";
+    default:
+      return "";
+  }
+};

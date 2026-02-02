@@ -603,6 +603,15 @@ export const LENORMAND_HOUSES: LenormandHouse[] = [
   { id: 110, name: "Casa 10 (Capricórnio)", polarity: Polarity.NEUTRAL, theme: "Carreira e Reputação", technicalDescription: "Objetivos de longo prazo, autoridade e sucesso profissional.", pedagogicalRule: "A realização no mundo.", isClockHouse: true, month: "Outubro", zodiac: "Capricórnio" },
   { id: 111, name: "Casa 11 (Aquário)", polarity: Polarity.POSITIVE, theme: "Amigos e Futuro", technicalDescription: "Amigos, inovação, projetos sociais e ideias futuristas.", pedagogicalRule: "A rede de apoio e planos.", isClockHouse: true, month: "Novembro", zodiac: "Aquário" },
   { id: 112, name: "Casa 12 (Peixes)", polarity: Polarity.NEUTRAL, theme: "Espiritualidade", technicalDescription: "Sonhos, sacrifícios finais, isolamento e espiritualidade.", pedagogicalRule: "O encerramento e a transcendência.", isClockHouse: true, month: "Dezembro", zodiac: "Peixes" }
+
+  // Casas do Templo de Afrodite
+  { id: 201, name: "Casa 1 (Mental - Ele/Ela)", polarity: Polarity.NEUTRAL, theme: "Pensamentos", technicalDescription: "O que a pessoa pensa sobre a relação e o parceiro.", isAfroditeHouse: true },
+  { id: 202, name: "Casa 2 (Mental - Você)", polarity: Polarity.NEUTRAL, theme: "Pensamentos", technicalDescription: "O que você pensa sobre a relação e o parceiro.", isAfroditeHouse: true },
+  { id: 203, name: "Casa 3 (Afetivo - Ele/Ela)", polarity: Polarity.NEUTRAL, theme: "Sentimentos", technicalDescription: "O que está no coração dele(a); as emoções reais.", isAfroditeHouse: true },
+  { id: 204, name: "Casa 4 (Afetivo - Você)", polarity: Polarity.NEUTRAL, theme: "Sentimentos", technicalDescription: "O que está no seu coração; suas emoções reais.", isAfroditeHouse: true },
+  { id: 205, name: "Casa 5 (Instintivo - Ele/Ela)", polarity: Polarity.NEUTRAL, theme: "Atitude/Desejo", technicalDescription: "Como ele(a) se comporta e o que deseja fisicamente.", isAfroditeHouse: true },
+  { id: 206, name: "Casa 6 (Instintivo - Você)", polarity: Polarity.NEUTRAL, theme: "Atitude/Desejo", technicalDescription: "Como você se comporta e o que deseja fisicamente.", isAfroditeHouse: true },
+  { id: 207, name: "Casa 7 (O Relacionamento)", polarity: Polarity.POSITIVE, theme: "Síntese/Futuro", technicalDescription: "O destino da relação e o resultado da soma de ambos.", isAfroditeHouse: true }
 ];
 
 export const FUNDAMENTALS_DATA: FundamentalModule[] = [
@@ -770,6 +779,17 @@ export const FUNDAMENTALS_DATA: FundamentalModule[] = [
         practiceTarget: 'relogio'
       }
     ]
+  },
+  {
+    id: 'f_afrodite',
+    title: 'Fundamentos do Templo de Afrodite',
+    description: 'Um spread especializado em relacionamentos, comparando as camadas mental, emocional e física de duas pessoas.',
+    content: 'O layout organiza as cartas em duas colunas (uma para cada pessoa) e uma carta central de síntese.',
+    concepts: [
+      { id: 'afro-columns', title: 'As Colunas', text: 'A coluna da esquerda representa um parceiro, a da direita o outro.', practiceTarget: 'templo-afrodite' },
+      { id: 'afro-levels', title: 'Os Três Níveis', text: 'Superior (Mental), Médio (Sentimental) e Inferior (Atitude/Instinto).', practiceTarget: 'templo-afrodite' },
+      { id: 'afro-synthesis', title: 'A Síntese', text: 'A sétima carta mostra para onde a relação está caminhando.', practiceTarget: 'templo-afrodite' }
+    ]
   }
 ];
 
@@ -787,5 +807,10 @@ export const STUDY_BALLOONS: Record<string, StudyBalloon[]> = {
   "relogio": [
     { target: "center", title: "Centro do Relógio", text: "Origem do ciclo anual e energia base da leitura que regula todo o período." },
     { target: "house", title: "Casa do Mês", text: "Cada posição representa um mês e um tema específico da jornada cíclica." }
+  ],
+  "templo-afrodite": [
+    { target: "mental", title: "Plano Mental", text: "Analise se os pensamentos de ambos estão em sintonia ou conflito." },
+    { target: "emotional", title: "Plano Emocional", text: "Aqui reside a verdade do sentimento. Cartas negativas aqui indicam bloqueios afetivos." },
+    { target: "synthesis", title: "O Futuro", text: "A carta central define se os esforços de ambos resultarão em união ou separação." }
   ]
 };
