@@ -763,7 +763,7 @@ const App: React.FC = () => {
       // Rodapé do cabeçalho / Info fixa
       doc.setFontSize(8);
       doc.setTextColor(150);
-      doc.text("Lumina 1.6 – sistema de estudo de baralho cigano", safetyMargin, 27);
+      doc.text("Lumina 1.7 – sistema de estudo de baralho cigano", safetyMargin, 27);
       doc.text("Um produto de Lunara Terapias – Araraquara/SP", pageWidth - safetyMargin, 27, { align: 'right' });
 
       // 3. Capture Content (Cartas)
