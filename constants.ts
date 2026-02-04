@@ -1,3 +1,4 @@
+
 import { LenormandCard, LenormandHouse, Polarity, Timing, FundamentalModule, StudyBalloon } from './types';
 
 export const GEOMETRY_GUIDE = {
@@ -8,6 +9,16 @@ export const GEOMETRY_GUIDE = {
   VEREDITO: { title: "Veredito Final ⚖️", desc: "Casas 33, 34, 35 e 36. O destino inevitável." },
   DIAGONALS: { title: "Diagonais 🔺🔻", desc: "Influências ascendentes e descendentes que modulam a força da carta." }
 };
+
+export const AFRODITE_HOUSES: LenormandHouse[] = [
+  { id: 201, name: "Mental do Consultante", polarity: Polarity.NEUTRAL, theme: "Planos Mentais", technicalDescription: "O que o consultante pensa e projeta racionalmente sobre a relação.", pedagogicalRule: "Compare com o Mental do Parceiro." },
+  { id: 202, name: "Sentimental do Consultante", polarity: Polarity.NEUTRAL, theme: "Planos Emocionais", technicalDescription: "Os sentimentos reais e profundos que o consultante nutre.", pedagogicalRule: "Compare com o Sentimental do Parceiro." },
+  { id: 203, name: "Atitudes do Consultante", polarity: Polarity.NEUTRAL, theme: "Planos Físicos/Ação", technicalDescription: "Como o consultante se comporta na prática e o que demonstra externamente.", pedagogicalRule: "Compare com as Atitudes do Parceiro." },
+  { id: 204, name: "Mental do Parceiro(a)", polarity: Polarity.NEUTRAL, theme: "Planos Mentais", technicalDescription: "O que a outra pessoa pensa e projeta racionalmente sobre a relação.", pedagogicalRule: "Compare com o Mental do Consultante." },
+  { id: 205, name: "Sentimental do Parceiro(a)", polarity: Polarity.NEUTRAL, theme: "Planos Emocionais", technicalDescription: "Os sentimentos reais e profundos que a outra pessoa nutre.", pedagogicalRule: "Compare com o Sentimental do Consultante." },
+  { id: 206, name: "Atitudes do Parceiro(a)", polarity: Polarity.NEUTRAL, theme: "Planos Físicos/Ação", technicalDescription: "Como a outra pessoa se comporta na prática e o que demonstra externamente.", pedagogicalRule: "Compare com as Atitudes do Consultante." },
+  { id: 207, name: "Síntese / Destino", polarity: Polarity.NEUTRAL, theme: "Futuro e Conexão", technicalDescription: "A energia resultante da interação e a tendência futura da relação.", pedagogicalRule: "Sintetiza todos os planos comparados." },
+];
 
 export const LENORMAND_CARDS: LenormandCard[] = [
   { 
@@ -323,7 +334,7 @@ export const LENORMAND_CARDS: LenormandCard[] = [
     amor: "Bloqueios emocionais, frieza, dificuldade de aproximação.",
     trabalho: "Projetos parados, burocracia pesada, desafios profissionais significativos.",
     dinheiro: "Recursos bloqueados, dificuldades financeiras ou lentidão em ganhos.",
-    conselhos: "Tenha paciência, busque caminhos alternativos, não force agora."
+    conselhos: "Tenha paciência, busca caminhos alternativos, não force agora."
   },
   { 
     id: 22, 
@@ -603,15 +614,6 @@ export const LENORMAND_HOUSES: LenormandHouse[] = [
   { id: 110, name: "Casa 10 (Capricórnio)", polarity: Polarity.NEUTRAL, theme: "Carreira e Reputação", technicalDescription: "Objetivos de longo prazo, autoridade e sucesso profissional.", pedagogicalRule: "A realização no mundo.", isClockHouse: true, month: "Outubro", zodiac: "Capricórnio" },
   { id: 111, name: "Casa 11 (Aquário)", polarity: Polarity.POSITIVE, theme: "Amigos e Futuro", technicalDescription: "Amigos, inovação, projetos sociais e ideias futuristas.", pedagogicalRule: "A rede de apoio e planos.", isClockHouse: true, month: "Novembro", zodiac: "Aquário" },
   { id: 112, name: "Casa 12 (Peixes)", polarity: Polarity.NEUTRAL, theme: "Espiritualidade", technicalDescription: "Sonhos, sacrifícios finais, isolamento e espiritualidade.", pedagogicalRule: "O encerramento e a transcendência.", isClockHouse: true, month: "Dezembro", zodiac: "Peixes" }
-
-  // Casas do Templo de Afrodite
-  { id: 201, name: "Casa 1 (Mental - Ele/Ela)", polarity: Polarity.NEUTRAL, theme: "Pensamentos", technicalDescription: "O que a pessoa pensa sobre a relação e o parceiro.", isAfroditeHouse: true },
-  { id: 202, name: "Casa 2 (Mental - Você)", polarity: Polarity.NEUTRAL, theme: "Pensamentos", technicalDescription: "O que você pensa sobre a relação e o parceiro.", isAfroditeHouse: true },
-  { id: 203, name: "Casa 3 (Afetivo - Ele/Ela)", polarity: Polarity.NEUTRAL, theme: "Sentimentos", technicalDescription: "O que está no coração dele(a); as emoções reais.", isAfroditeHouse: true },
-  { id: 204, name: "Casa 4 (Afetivo - Você)", polarity: Polarity.NEUTRAL, theme: "Sentimentos", technicalDescription: "O que está no seu coração; suas emoções reais.", isAfroditeHouse: true },
-  { id: 205, name: "Casa 5 (Instintivo - Ele/Ela)", polarity: Polarity.NEUTRAL, theme: "Atitude/Desejo", technicalDescription: "Como ele(a) se comporta e o que deseja fisicamente.", isAfroditeHouse: true },
-  { id: 206, name: "Casa 6 (Instintivo - Você)", polarity: Polarity.NEUTRAL, theme: "Atitude/Desejo", technicalDescription: "Como você se comporta e o que deseja fisicamente.", isAfroditeHouse: true },
-  { id: 207, name: "Casa 7 (O Relacionamento)", polarity: Polarity.POSITIVE, theme: "Síntese/Futuro", technicalDescription: "O destino da relação e o resultado da soma de ambos.", isAfroditeHouse: true }
 ];
 
 export const FUNDAMENTALS_DATA: FundamentalModule[] = [
@@ -668,6 +670,21 @@ export const FUNDAMENTALS_DATA: FundamentalModule[] = [
         text: 'As casas 33 a 36 mostram o destino inevitável e o conselho final da leitura.',
         details: 'As quatro últimas casas fornecem a síntese final da leitura, destino inevitável e o conselho maior.',
         practiceTarget: 'mesa-real'
+      }
+    ]
+  },
+  {
+    id: 'f_afrodite',
+    title: 'Templo de Afrodite',
+    description: 'Análise detalhada de relacionamentos através da comparação de planos mentais, emocionais e físicos de duas pessoas.',
+    content: 'O Templo de Afrodite utiliza 7 cartas para mapear a dinâmica de um casal ou parceria.',
+    concepts: [
+      {
+        id: 'afrodite-structure',
+        title: 'Estrutura de Planos',
+        text: 'As cartas comparam o Mental (1 e 4), o Sentimental (2 e 5) e o Físico (3 e 6).',
+        details: 'A carta 7 atua como a síntese e tendência de destino da conexão.',
+        practiceTarget: 'templo-afrodite'
       }
     ]
   },
@@ -779,17 +796,6 @@ export const FUNDAMENTALS_DATA: FundamentalModule[] = [
         practiceTarget: 'relogio'
       }
     ]
-  },
-  {
-    id: 'f_afrodite',
-    title: 'Fundamentos do Templo de Afrodite',
-    description: 'Um spread especializado em relacionamentos, comparando as camadas mental, emocional e física de duas pessoas.',
-    content: 'O layout organiza as cartas em duas colunas (uma para cada pessoa) e uma carta central de síntese.',
-    concepts: [
-      { id: 'afro-columns', title: 'As Colunas', text: 'A coluna da esquerda representa um parceiro, a da direita o outro.', practiceTarget: 'templo-afrodite' },
-      { id: 'afro-levels', title: 'Os Três Níveis', text: 'Superior (Mental), Médio (Sentimental) e Inferior (Atitude/Instinto).', practiceTarget: 'templo-afrodite' },
-      { id: 'afro-synthesis', title: 'A Síntese', text: 'A sétima carta mostra para onde a relação está caminhando.', practiceTarget: 'templo-afrodite' }
-    ]
   }
 ];
 
@@ -809,8 +815,6 @@ export const STUDY_BALLOONS: Record<string, StudyBalloon[]> = {
     { target: "house", title: "Casa do Mês", text: "Cada posição representa um mês e um tema específico da jornada cíclica." }
   ],
   "templo-afrodite": [
-    { target: "mental", title: "Plano Mental", text: "Analise se os pensamentos de ambos estão em sintonia ou conflito." },
-    { target: "emotional", title: "Plano Emocional", text: "Aqui reside a verdade do sentimento. Cartas negativas aqui indicam bloqueios afetivos." },
-    { target: "synthesis", title: "O Futuro", text: "A carta central define se os esforços de ambos resultarão em união ou separação." }
+    { target: "structure", title: "Comparação de Planos", text: "Observe as correspondências horizontais entre consultante e parceiro para ver a harmonia ou conflito." }
   ]
 };

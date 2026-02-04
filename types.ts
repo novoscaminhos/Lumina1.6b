@@ -1,3 +1,4 @@
+
 export enum Polarity {
   POSITIVE = 'Positiva',
   NEGATIVE = 'Negativa',
@@ -31,10 +32,11 @@ export interface LenormandCard {
   symbolicEnergy: string;
   suit: string;
   description: string;
+  // Novos campos ricos do JSON Mestre
   amor?: string;
   trabalho?: string;
   dinheiro?: string;
-  conselhos?: string; // CORRIGIDO: de 'conelhos' para 'conselhos'
+  conselhos?: string;
 }
 
 export interface LenormandHouse {
@@ -45,17 +47,13 @@ export interface LenormandHouse {
   technicalDescription: string;
   pedagogicalRule: string;
   isClockHouse?: boolean;
-  isAfroditeHouse?: boolean;
   month?: string;
   zodiac?: string;
 }
 
-export type SpreadType =
-  | 'mesa-real'
-  | 'relogio'
-  | 'mesa-9'
-  | 'templo-afrodite';
+export type SpreadType = 'mesa-real' | 'relogio' | 'mesa-9' | 'templo-afrodite';
 
+// GeometryFilter type for board filtering techniques
 export type GeometryFilter = 'nenhuma' | 'todas' | 'ponte' | 'cavalo' | 'moldura' | 'veredito' | 'diagonais' | 'centro' | 'cruz';
 
 export interface StudyTrack {
@@ -84,7 +82,7 @@ export interface FundamentalModule {
 export interface StudyModeState {
   active: boolean;
   topicId: string | null;
-  practiceTarget: SpreadType | null;
+  practiceTarget: 'mesa-real' | 'relogio' | 'mesa-9' | 'templo-afrodite' | null;
   splitView: boolean;
 }
 
@@ -92,13 +90,4 @@ export interface StudyBalloon {
   target: string;
   title: string;
   text: string;
-}
-
-export interface SavedReading {
-  id: string;
-  date: string;
-  spreadType: SpreadType;
-  theme: ReadingTheme;
-  cards: (number | null)[];
-  analysis?: string;
 }

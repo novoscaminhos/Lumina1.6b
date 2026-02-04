@@ -1,5 +1,6 @@
+
 import { GoogleGenAI } from "@google/genai";
-import { LENORMAND_CARDS, LENORMAND_HOUSES } from "./constants";
+import { LENORMAND_CARDS, LENORMAND_HOUSES, AFRODITE_HOUSES } from "./constants";
 import { SpreadType, StudyLevel, ReadingTheme } from "./types";
 import * as Geometry from "./geometryService";
 
@@ -15,61 +16,73 @@ export const getDetailedCardAnalysis = async (
   spreadType: SpreadType = 'mesa-real',
   level: StudyLevel = 'Iniciante'
 ) => {
-  // Use a variável de ambiente correta conforme seu framework (ex: VITE_API_KEY ou NEXT_PUBLIC_...)
-  const apiKey = process.env.API_KEY || "";
-  if (!apiKey) return "Configuração de API pendente.";
+  if (!process.env.API_KEY) return "Configuração de API pendente.";
   
   const selectedCardId = boardState[selectedIndex];
   if (selectedCardId === null) return "Selecione uma casa ocupada para análise.";
 
   const card = LENORMAND_CARDS.find(c => c.id === selectedCardId);
   
-  // CORREÇÃO: Busca dinâmica da casa baseada no Spread
   let house;
   if (spreadType === 'relogio') {
     house = LENORMAND_HOUSES.find(h => h.id === (101 + selectedIndex));
   } else if (spreadType === 'templo-afrodite') {
-    house = LENORMAND_HOUSES.find(h => h.id === (201 + selectedIndex));
+    house = AFRODITE_HOUSES[selectedIndex];
   } else {
-    // Mesa Real e Mesa de 9 usam as casas padrão 1-36 (índices 0-35)
     house = LENORMAND_HOUSES[selectedIndex];
   }
 
   if (!house) return "Erro ao localizar contexto da casa.";
 
-  let geometries: any = {};
+  // Cálculo da Ponte para o contexto da IA
+  const bridgeIndex = spreadType === 'mesa-real' ? boardState.findIndex(id => id === (selectedIndex + 1)) : -1;
+  const bridgeCardName = bridgeIndex !== -1 ? getCardName(boardState[bridgeIndex]) : null;
+  const bridgeHouseName = bridgeIndex !== -1 ? LENORMAND_HOUSES[bridgeIndex]?.name : null;
+
+  let geometries = {};
 
   if (spreadType === 'mesa-real') {
-    const bridgeIndex = boardState.findIndex(id => id === (selectedIndex + 1));
     geometries = {
         ponte_causa_raiz: {
-          target_card: bridgeIndex !== -1 ? getCardName(boardState[bridgeIndex]) : null,
-          target_house: bridgeIndex !== -1 ? LENORMAND_HOUSES[bridgeIndex]?.name : null
+          target_card: bridgeCardName,
+          target_house: bridgeHouseName,
+          explanation: "O dono da casa selecionada está nesta outra posição."
         },
         molduras: [0, 7, 24, 31].map(idx => getCardName(boardState[idx])),
+        espelho_h: getCardName(boardState[selectedIndex >= 32 ? selectedIndex : (Math.floor(selectedIndex/8)*8 + (7-(selectedIndex%8)))]),
         veredito: boardState.slice(32, 36).map(id => getCardName(id)),
-        diagonais: {
-            ascendente: Geometry.getDiagonaisSuperiores(selectedIndex).map(idx => getCardName(boardState[idx])),
-            descendente: Geometry.getDiagonaisInferiores(selectedIndex).map(idx => getCardName(boardState[idx]))
-        }
+        diagonal_superior_ascendente: Geometry.getDiagonaisSuperiores(selectedIndex).map(idx => getCardName(boardState[idx])),
+        diagonal_inferior_descendente: Geometry.getDiagonaisInferiores(selectedIndex).map(idx => getCardName(boardState[idx]))
     };
   } else if (spreadType === 'relogio') {
+    const centerCardName = getCardName(boardState[12]);
     geometries = {
-        temporal_context: { month: house.month, zodiac: house.zodiac },
-        central_regent: getCardName(boardState[12]),
-        oposicao_direta: getCardName(boardState[Geometry.getOposicaoRelogio(selectedIndex)])
+        temporal_context: {
+            month: house.month,
+            zodiac: house.zodiac,
+            house_theme: house.theme
+        },
+        central_influence: {
+            center_card: centerCardName,
+            role: "Filtro Central e Regente do Ano"
+        },
+        oposto: getCardName(boardState[Geometry.getOposicaoRelogio(selectedIndex)]),
+        eixo_conceitual: Geometry.getEixoConceitualRelogio(selectedIndex),
     };
+  } else if (spreadType === 'mesa-9') {
+     const isCenter = selectedIndex === 4;
+     geometries = {
+         posicao_na_grade: isCenter ? "CENTRO (Foco)" : "Periferia/Influência",
+         cruz_central: Geometry.getCruz9Cards(selectedIndex).map(idx => getCardName(boardState[idx])),
+         diagonais_x: Geometry.getDiagonais9Cards(selectedIndex).map(idx => getCardName(boardState[idx])),
+         foco_central_leitura: getCardName(boardState[4])
+     };
   } else if (spreadType === 'templo-afrodite') {
-    // MAPEAMENTO ÓTIMO: Organiza por níveis para a IA comparar
-    geometries = {
-      niveis_comparativos: {
-        mental: { ele: getCardName(boardState[0]), voce: getCardName(boardState[1]) },
-        afetivo: { ele: getCardName(boardState[2]), voce: getCardName(boardState[3]) },
-        instintivo: { ele: getCardName(boardState[4]), voce: getCardName(boardState[5]) }
-      },
-      sintese_relacionamento: getCardName(boardState[6]),
-      posicao_clicada: selectedIndex % 2 === 0 ? "Lado dele/a (Coluna A)" : "Seu lado (Coluna B)"
-    };
+      geometries = {
+          plano_relacional: house.theme,
+          par_correspondente: selectedIndex < 3 ? getCardName(boardState[selectedIndex + 3]) : selectedIndex < 6 ? getCardName(boardState[selectedIndex - 3]) : "N/A (Síntese)",
+          tipo_de_fluxo: "Comparativo entre polos"
+      };
   }
 
   const context = {
@@ -78,35 +91,67 @@ export const getDetailedCardAnalysis = async (
     selected: { 
         card: card?.name, 
         house: house.name, 
-        house_theme: house.theme,
-        timing: card?.timingSpeed
+        house_theme_original: house.theme,
+        polarity: card?.polarity,
+        timing: {
+          speed: card?.timingSpeed,
+          scale: card?.timingScale,
+          category: card?.timingCategory
+        }
     },
-    theme,
+    reading_expansion_theme: theme,
     geometries
   };
 
   const prompt = `
-    Você é o Mentor Virtual LUMINA (Baralho Cigano). 
-    Gere uma análise pedagógica nível ${level} para o tema "${theme}".
+    Você é o Mentor Virtual de Baralho Cigano do ecossistema LUMINA.
+    Sua missão é gerar uma SÍNTESE PEDAGÓGICA para um estudante de nível ${level}.
     
-    TIPO DE JOGO: ${spreadType.toUpperCase()}
-    CONTEXTO ATUAL: ${JSON.stringify(context, null, 2)}
+    EXPANSÃO TEMÁTICA ATUAL (FOCO): ${theme}
+    TIPO DE TIRAGEM: ${
+        spreadType === 'mesa-real' ? 'Mesa Real (36 casas)' : 
+        spreadType === 'mesa-9' ? 'Quadrado de 9 (Mini-Mesa)' : 
+        spreadType === 'templo-afrodite' ? 'Templo de Afrodite (7 casas)' :
+        'Tiragem em Relógio (12 meses/casas)'
+    }
+    CONTEXTO TÉCNICO: ${JSON.stringify(context, null, 2)}
     
-    ESTRUTURA:
-    1. **O Momento (Tempo)**: Use a velocidade "${card?.timingSpeed}" para explicar o ritmo da situação.
-    2. **Foco na Casa ${house.name}**: Como a carta ${card?.name} se manifesta aqui?
-    3. **Conexões Geométricas**: 
-       ${spreadType === 'templo-afrodite' ? 'Compare o nível atual entre as duas pessoas.' : 'Use as diagonais/pontes fornecidas.'}
-    4. **Veredito do Mentor**: Uma síntese de impacto.
-    5. **Exercício**: Uma pergunta reflexiva para o estudante.
+    INSTRUÇÕES ESPECÍFICAS SOBRE O TEMPO:
+    - A carta atual possui a velocidade "${card?.timingSpeed}", escala "${card?.timingScale}" e impacto "${card?.timingCategory}".
+    - Explique como essa dinâmica de tempo afeta o tema "${theme}".
+
+    ESTRUTURA DA RESPOSTA (Markdown):
+    
+    1. **Dinâmica Temporal e Fluxo**: 
+       Explique a escala de tempo (${card?.timingScale}) e como a categoria (${card?.timingCategory}) modula a rapidez dos acontecimentos no tema ${theme}.
+    
+    2. **Foco Temático: ${theme}**: Manifestação da energia na casa "${house.name}".
+    
+    3. **A Origem do Tema / Geometria**: 
+       Explique o que a posição revela sobre a dinâmica geral.
+       ${spreadType === 'templo-afrodite' ? 'No Templo de Afrodite, compare com o par correspondente para analisar harmonia ou dissonância.' : ''}
+    
+    4. **SÍNTESE TÉCNICA (O Veredito do Mentor)**: 
+       Gere uma frase curta de impacto pedagógico integrando o significado base ao tema.
+    
+    5. **A Voz do Mentor**: 
+       - Uma provocação ética sobre o ciclo.
+       - 2 perguntas-guia para o nível ${level} específicas para o tema "${theme}".
+
+    DIRETRIZES ÉTICAS:
+    - JAMAIS preveja morte ou fatalidades.
+    - Linguagem DIDÁTICA, MÍSTICA e TÉCNICA.
   `;
 
-  const ai = new GoogleGenAI(apiKey);
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
   try {
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" }); // Recomendo o flash para velocidade/custo
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    const response = await ai.models.generateContent({
+      model: "gemini-3-pro-preview",
+      contents: prompt,
+    });
+    return response.text || "Erro na síntese.";
   } catch (error) {
-    return "O Mentor Lumina está meditando. Tente novamente em breve.";
+    return "Erro de conexão com o Mentor.";
   }
 };
